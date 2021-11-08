@@ -1,0 +1,10 @@
+package com.mvvm.home.api
+
+/**
+ * Created by yan_x
+ * @date 2021/11/5/005 18:12
+ * @description
+ */
+interface ApiService {
+    fun getTest()
+}

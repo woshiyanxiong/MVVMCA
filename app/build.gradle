@@ -39,5 +39,8 @@ dependencies {
     implementation project(':lib_common')
     implementation project(':lib_language')
     implementation project(':module_home')
+    implementation project(path: ':module_home_api')
     implementation project(':module_mine')
+    implementation project(path: ':lib_base_package')
+
 }
