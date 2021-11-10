@@ -38,6 +38,9 @@ object Net {
 
     private fun getOkHttpClient(): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor()
+        val logging = HttpLoggingInterceptor()
+
+        logging.level = HttpLoggingInterceptor.Level.BODY
         if (LogUtils.isDebug) {
             loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         }
@@ -49,8 +52,9 @@ object Net {
         }
         return OkHttpClient.Builder()
             .connectTimeout(timeOut, TimeUnit.SECONDS)
-            .addInterceptor(loggingInterceptor)
+
             .addInterceptor(headerInterceptor)
+            .addInterceptor(logging)
             .writeTimeout(timeOut, TimeUnit.SECONDS)
             .readTimeout(timeOut, TimeUnit.SECONDS)
             .build()

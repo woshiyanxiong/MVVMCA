@@ -7,4 +7,5 @@ package com.mvvm.home.api
  */
 interface ApiService {
     fun getTest()
+    fun setTest()
 }
