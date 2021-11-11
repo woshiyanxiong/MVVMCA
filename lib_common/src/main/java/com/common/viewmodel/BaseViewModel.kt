@@ -1,6 +1,5 @@
 package com.common.viewmodel
 
-import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.common.BaseResponse
 import com.common.throwe.BaseResponseThrowable
@@ -12,7 +11,7 @@ import kotlinx.coroutines.*
  * ViewModel 基础类
  *@author yx
  */
-open class BaseViewModel() : BaseLifeViewModel() {
+open class BaseViewModel : BaseLifeViewModel() {
 
     var stateView = StateView()
 
@@ -25,7 +24,7 @@ open class BaseViewModel() : BaseLifeViewModel() {
     fun <T> async(
         request: suspend CoroutineScope.() -> T,
         success: (T) -> Unit,
-        error: suspend CoroutineScope.(BaseResponseThrowable) -> Unit,
+        error: suspend CoroutineScope.(BaseResponseThrowable) -> Unit={},
         complete: suspend CoroutineScope.() -> Unit = {}
     ) {
         launchUi {

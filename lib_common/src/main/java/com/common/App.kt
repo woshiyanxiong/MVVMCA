@@ -1,6 +1,8 @@
 package com.common
 
+import android.app.Activity
 import android.app.Application
+import android.os.Bundle
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -10,7 +12,40 @@ import dagger.hilt.android.HiltAndroidApp
  */
 
 class App: Application() {
+
     override fun onCreate() {
         super.onCreate()
+    }
+
+    private var activityAccount = 0
+
+    private var activityLifecycleCallbacks: ActivityLifecycleCallbacks = object : ActivityLifecycleCallbacks {
+        override fun onActivityPaused(p0: Activity) {
+
+        }
+
+        override fun onActivityStarted(p0: Activity) {
+            activityAccount++
+        }
+
+        override fun onActivityDestroyed(p0: Activity) {
+
+        }
+
+        override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {
+
+        }
+
+        override fun onActivityStopped(p0: Activity) {
+            activityAccount--
+        }
+
+        override fun onActivityCreated(p0: Activity, p1: Bundle?) {
+
+        }
+
+        override fun onActivityResumed(p0: Activity) {
+
+        }
     }
 }

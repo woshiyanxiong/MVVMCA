@@ -2,10 +2,12 @@ package com.common.di
 
 import com.common.network.Net
 import com.common.network.api.UserApiService
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.Multibinds
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
@@ -14,19 +16,21 @@ import javax.inject.Singleton
  * @date 2021/11/8/008 10:29
  * @description
  */
-@Module
 @InstallIn(SingletonComponent::class)
-object  ApiModule {
-
+@Module
+object ApiModule {
     @Provides
-    @JvmStatic
     fun providerRetrofit(): Retrofit {
         return Net.getRetrofit("https://www.wanandroid.com")
     }
-
     @Provides
-    @JvmStatic
-    fun providerUserService():UserApiService{
+    fun providerUserService(): UserApiService {
         return providerRetrofit().create(UserApiService::class.java)
     }
+//
+//    @Provides
+//    @JvmStatic
+//    fun providerHomeService():UserApiService{
+//        return providerRetrofit().create(UserApiService::class.java)
+//    }
 }

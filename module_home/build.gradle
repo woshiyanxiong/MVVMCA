@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
 }
+apply from : "${project.rootDir}/base_config.gradle"
 
 android {
     compileSdk 31
@@ -14,6 +15,11 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+        kapt {
+            javacOptions {
+                option("-Adagger.hilt.android.internal.disableAndroidSuperclassValidation=true")
+            }
+        }
     }
 
     buildTypes {
@@ -29,11 +35,14 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    dataBinding {
+        enabled = true
+    }
 }
 
 dependencies {
-    implementation project(':lib_common')
     implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.5.20"
-//    implementation project(path: ':module_recommend_api')
-//    implementation project(path: ':module_home_api')
+    implementation project(path: ':module_home_api')
+
 }

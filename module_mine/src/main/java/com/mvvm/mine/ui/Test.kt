@@ -1,6 +1,5 @@
 package com.mvvm.mine.ui
 
-import com.mvvm.home.api.ApiService
 import com.mvvm.home.bean.BeanInfo
 import com.mvvm.mine.api.MineApiService
 
@@ -12,5 +11,4 @@ import com.mvvm.mine.api.MineApiService
  */
 class Test {
     val info = BeanInfo()
-    val api: ApiService? = null
 }

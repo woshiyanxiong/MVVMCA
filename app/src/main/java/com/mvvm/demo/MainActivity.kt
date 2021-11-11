@@ -2,8 +2,11 @@ package com.mvvm.demo
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.mvvm.home.ui.HomeFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,17 +22,17 @@ import javax.inject.Inject
 class MainActivity: AppCompatActivity() {
     @Inject
     lateinit var repository: UserRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         lifecycleScope.launch{
-            withContext(Dispatchers.IO){
-                repository.registered("yanxiong","123456","123456")
-            }
             val data= withContext(Dispatchers.IO){
                 repository.login("yanxiong","123456")
             }
-            Log.e("ffffff",""+data)
+            supportFragmentManager.beginTransaction().add(R.id.fragment,HomeFragment()).commitAllowingStateLoss()
         }
+
     }
+
 }

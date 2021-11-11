@@ -9,6 +9,7 @@ import androidx.annotation.LayoutRes
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 
 
@@ -27,7 +28,6 @@ abstract class CommonBaseFragment<VB : ViewDataBinding>: Fragment() {
     lateinit var binding: VB
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
