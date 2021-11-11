@@ -3,6 +3,7 @@ package com.common
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import com.common.helper.image.ImageLoad
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -15,6 +16,7 @@ class App: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
     }
 
     private var activityAccount = 0
@@ -48,4 +50,9 @@ class App: Application() {
 
         }
     }
+
+    /**
+     * 是否在后台
+     */
+    fun isBackground():Boolean=activityAccount==0
 }
