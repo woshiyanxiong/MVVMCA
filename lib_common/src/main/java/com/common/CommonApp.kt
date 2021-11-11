@@ -3,20 +3,17 @@ package com.common
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import com.common.helper.image.ImageLoad
-import dagger.hilt.android.HiltAndroidApp
 
 /**
  * Created by yan_x
  * @date 2021/11/8/008 10:43
  * @description
  */
-
-class App: Application() {
+open class CommonApp: Application() {
 
     override fun onCreate() {
         super.onCreate()
-
+        registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
     }
 
     private var activityAccount = 0

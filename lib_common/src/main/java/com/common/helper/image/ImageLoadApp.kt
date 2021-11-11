@@ -11,7 +11,7 @@ import android.widget.ImageView
  * @description 图片加载，考虑这样封装的必要性
  * 用工具类的形式可以达到同样效果
  */
-object ImageLoad {
+object ImageLoadApp {
 
     private var imageConfig: ImageStrategy? = null
 
