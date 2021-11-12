@@ -10,6 +10,7 @@ import android.widget.ImageView
  * @date 2021/11/11/011 17:13
  * @description 图片加载，考虑这样封装的必要性
  * 用工具类的形式可以达到同样效果
+ * 也可暴露接口对外使用，通过dagger注册
  */
 object ImageLoadApp {
 

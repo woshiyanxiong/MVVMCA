@@ -8,7 +8,7 @@ import androidx.annotation.DrawableRes
 /**
  * Created by yan_x
  * @date 2021/11/11/011 17:06
- * @description
+ * @description 其实可以一个方法里面写完的.....
  */
 interface ImageStrategy {
 

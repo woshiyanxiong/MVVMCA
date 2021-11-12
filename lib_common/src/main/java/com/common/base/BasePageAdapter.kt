@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentPagerAdapter
 
 /**
  * create by 2019/9/28
- *
+ * viewPager适配器
  * @author yx
  */
 class BasePageAdapter(

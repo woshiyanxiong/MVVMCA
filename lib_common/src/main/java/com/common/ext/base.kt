@@ -1,29 +1,18 @@
-package com.common.base
+package com.common.ext
 
 import android.app.Activity
-import android.content.Intent
-import android.os.Bundle
 import android.text.TextUtils
 import android.widget.Toast
 import com.common.network.RequestObserver
 import com.common.throwe.BaseResponseThrowable
-import com.uber.autodispose.AutoDispose
-import com.uber.autodispose.AutoDisposeConverter
 import com.uber.autodispose.SingleSubscribeProxy
-import io.reactivex.CompletableObserver
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.annotations.CheckReturnValue
-import io.reactivex.annotations.NonNull
 import io.reactivex.annotations.SchedulerSupport
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Action
-import io.reactivex.functions.Consumer
 import io.reactivex.internal.functions.ObjectHelper
-import io.reactivex.internal.operators.observable.ObservableBlockingSubscribe.subscribe
-import io.reactivex.observers.TestObserver
 import io.reactivex.schedulers.Schedulers
-import com.uber.autodispose.CompletableSubscribeProxy as CompletableSubscribeProxy
 
 
 /**
