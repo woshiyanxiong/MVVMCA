@@ -1,7 +1,10 @@
 package com.mvvm.demo
 
 import android.app.Application
+import com.mvvm.logcat.CrashHandler
 import dagger.hilt.android.HiltAndroidApp
+import com.mvvm.logcat.LogUtils
+
 
 /**
  * Created by yan_x
@@ -10,4 +13,9 @@ import dagger.hilt.android.HiltAndroidApp
  */
 @HiltAndroidApp
 class App: Application() {
+    override fun onCreate() {
+        super.onCreate()
+        CrashHandler.getInstance().init(this)
+        LogUtils.init(this)
+    }
 }

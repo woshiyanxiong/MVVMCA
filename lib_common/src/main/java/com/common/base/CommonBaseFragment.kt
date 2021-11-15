@@ -33,6 +33,7 @@ abstract class CommonBaseFragment<VB : ViewDataBinding>: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = DataBindingUtil.inflate(inflater, getLayout(), null, false)
         isViewCreated = true
+        binding.lifecycleOwner=this
         return binding.root
     }
 

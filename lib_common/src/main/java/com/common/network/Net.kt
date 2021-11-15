@@ -54,7 +54,7 @@ object Net {
             .connectTimeout(timeOut, TimeUnit.SECONDS)
 
             .addInterceptor(headerInterceptor)
-            .addInterceptor(logging)
+            .addInterceptor(HttpLogInterceptor())
             .writeTimeout(timeOut, TimeUnit.SECONDS)
             .readTimeout(timeOut, TimeUnit.SECONDS)
             .build()

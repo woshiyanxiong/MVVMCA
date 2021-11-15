@@ -20,6 +20,7 @@ abstract class CommonBaseActivity<VB: ViewDataBinding>:AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView<VB>(this, getLayout())
+        binding.lifecycleOwner=this
         initView()
     }
     @LayoutRes

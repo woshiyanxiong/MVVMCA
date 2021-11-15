@@ -29,7 +29,7 @@ public class LogUtils {
 		}
 	}
 	public static void printJson(String tag, String msg){
-		if (isDebug) {
+
 
 			if (tag == null || tag.length() == 0 || msg == null || ((String) msg).length() == 0) {
 				return;
@@ -48,7 +48,7 @@ public class LogUtils {
 				Log.i("", ((String) msg));
 				// 打印剩余日志 }
 			}
-		}
+
 
 	}
 	public static <T> void v(String tag, T msg) {

@@ -159,3 +159,4 @@ include ':module_mine'
 include ':module_recommend'
 //includeWithApi ':module_recommend'
 
+include ':lib_logcat'
