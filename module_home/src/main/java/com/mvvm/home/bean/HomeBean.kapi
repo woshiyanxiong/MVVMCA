@@ -5,11 +5,9 @@ package com.mvvm.home.bean
  * @date 2021/11/11/011 9:41
  * @description
  */
-data class HomeResponse(
-    val `data`: Data
-)
 
-data class Data(
+
+data class HomeResponse(
     val curPage: Int,
     val datas: List<DataX>,
     val offset: Int,

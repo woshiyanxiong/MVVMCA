@@ -1,4 +1,4 @@
-package com.common.throwe
+package com.common.network.throwe
 
 /**
  * create by 2020/5/15

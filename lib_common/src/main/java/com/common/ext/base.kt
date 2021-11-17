@@ -4,7 +4,7 @@ import android.app.Activity
 import android.text.TextUtils
 import android.widget.Toast
 import com.common.network.RequestObserver
-import com.common.throwe.BaseResponseThrowable
+import com.common.network.throwe.BaseResponseThrowable
 import com.uber.autodispose.SingleSubscribeProxy
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers

@@ -160,3 +160,4 @@ include ':module_recommend'
 //includeWithApi ':module_recommend'
 
 include ':lib_logcat'
+include ':lib_image'

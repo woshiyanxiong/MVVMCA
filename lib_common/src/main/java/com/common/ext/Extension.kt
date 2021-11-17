@@ -1,4 +1,4 @@
-package com.common
+package com.common.ext
 
 import android.app.Activity
 import android.content.Context
@@ -28,11 +28,11 @@ fun Activity.navigationActivity(cl: Class<*>, bundle: Bundle) {
 }
 
 fun Fragment.navigationActivity(cl: Class<*>, bundle: Bundle) {
-    startActivity(Intent(activity, cl).putExtras(bundle))
+    startActivity(Intent(requireContext(), cl).putExtras(bundle))
 }
 
 fun Fragment.navigationActivity(cl: Class<*>) {
-    activity?.startActivity(Intent(activity, cl))
+    startActivity(Intent(requireContext(), cl))
 }
 
 /**

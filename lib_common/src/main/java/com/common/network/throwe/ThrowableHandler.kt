@@ -1,7 +1,4 @@
-package com.common.throwe
-
-import com.common.throwe.BaseResponseThrowable
-import java.lang.Exception
+package com.common.network.throwe
 
 /**
  * create by 2020/5/15

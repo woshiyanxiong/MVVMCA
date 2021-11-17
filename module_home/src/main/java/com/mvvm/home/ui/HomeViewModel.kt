@@ -1,7 +1,10 @@
 package com.mvvm.home.ui
 
 import android.util.Log
+import androidx.databinding.ObservableArrayList
+import androidx.databinding.ObservableList
 import com.common.viewmodel.BaseViewModel
+import com.mvvm.home.bean.DataX
 import com.mvvm.home.repository.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -13,15 +16,14 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val repository: HomeRepository) : BaseViewModel() {
-    fun getHomeInfoList(){
+
+    var homeData: ObservableList<DataX> = ObservableArrayList()
+
+    fun getHomeInfoList() {
         async({
             repository.getHomeInfoList(0)
-        },{
-
-        },{
-
-        },{
-            Log.e("当前线程",Thread.currentThread().name)
+        }, {
+            homeData.addAll(it.data.datas)
         })
     }
 }

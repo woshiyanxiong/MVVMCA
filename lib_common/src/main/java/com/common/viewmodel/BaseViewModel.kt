@@ -2,8 +2,8 @@ package com.common.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.common.BaseResponse
-import com.common.throwe.BaseResponseThrowable
-import com.common.throwe.ThrowableHandler
+import com.common.network.throwe.BaseResponseThrowable
+import com.common.network.throwe.ThrowableHandler
 import kotlinx.coroutines.*
 
 /**
