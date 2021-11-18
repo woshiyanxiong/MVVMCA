@@ -62,6 +62,7 @@ dependencies {
     implementation project(':lib_image')
     implementation project(':module_home')
     implementation project(':module_mine')
+    implementation project(path: ':module_home_api')
     implementation project(path: ':lib_base_package')
     implementation "com.google.dagger:hilt-android:2.35"
     kapt "com.google.dagger:hilt-android-compiler:2.35"

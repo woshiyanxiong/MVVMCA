@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:background="@color/white"
+        android:layout_height="wrap_content">
+
+
+        <TextView
+            android:id="@+id/tvBaidu"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_48"
+            android:text="baidu"
+            android:gravity="center"
+            android:textColor="@color/text3"
+            android:textSize="@dimen/sp_16"
+            app:layout_constraintBottom_toBottomOf="parent" />
+        <TextView
+            android:id="@+id/tvGaoDe"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_48"
+            android:text="gaode"
+            android:gravity="center"
+            android:textColor="@color/text3"
+            android:textSize="@dimen/sp_16"
+            app:layout_constraintBottom_toTopOf="@+id/tvBaidu" />
+        <TextView
+            android:id="@+id/tvTent"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_48"
+            android:text="tent"
+            android:gravity="center"
+            android:textColor="@color/text3"
+            android:textSize="@dimen/sp_16"
+            app:layout_constraintBottom_toTopOf="@+id/tvGaoDe" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

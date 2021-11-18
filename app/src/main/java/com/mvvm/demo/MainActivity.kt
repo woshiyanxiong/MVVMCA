@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.mvvm.home.ui.HomeFragment
 import com.mvvm.logcat.LogUtils
+import com.mvvm.mine.ui.MineFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,7 +24,7 @@ class MainActivity: AppCompatActivity() {
         setContentView(R.layout.activity_main)
         lifecycleScope.launch{
             repository.login("yanxiong","123456")
-            supportFragmentManager.beginTransaction().add(R.id.fragment,HomeFragment()).commitAllowingStateLoss()
+            supportFragmentManager.beginTransaction().add(R.id.fragment, MineFragment()).commitAllowingStateLoss()
         }
         LogUtils.d("ffff","fffffffffff")
         LogUtils.logAll()
