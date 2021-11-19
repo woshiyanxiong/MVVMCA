@@ -19,6 +19,7 @@
         <activity
             android:name=".SplashActivity"
             android:theme="@style/WelcomeStyle"
+            android:launchMode="singleTop"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

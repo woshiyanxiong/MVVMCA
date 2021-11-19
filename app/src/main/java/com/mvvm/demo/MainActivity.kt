@@ -1,10 +1,11 @@
 package com.mvvm.demo
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
+import com.common.base.BaseActivity
+import com.mvvm.demo.databinding.ActivityMainBinding
 import com.mvvm.home.ui.HomeFragment
-import com.mvvm.logcat.LogUtils
 import com.mvvm.mine.ui.MineFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -15,19 +16,73 @@ import javax.inject.Inject
  * @description
  */
 @AndroidEntryPoint
-class MainActivity: AppCompatActivity() {
+class MainActivity: BaseActivity<ActivityMainBinding>(){
     @Inject
     lateinit var repository: UserRepository
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    private val fragments= arrayListOf<Fragment>()
+
+    override fun getLayout(): Int = R.layout.activity_main
+
+    override fun initView() {
         lifecycleScope.launch{
             repository.login("yanxiong","123456")
-            supportFragmentManager.beginTransaction().add(R.id.fragment, MineFragment()).commitAllowingStateLoss()
         }
-        LogUtils.d("ffff","fffffffffff")
-        LogUtils.logAll()
+        initTab()
     }
+
+    private fun initTab(){
+        fragments.add(HomeFragment())
+        fragments.add(MineFragment())
+        selectPosition(0)
+        binding.bvNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.home -> {
+                    selectPosition(0)
+                }
+                else -> {
+                    selectPosition(1)
+                }
+            }
+            true
+        }
+    }
+
+    private fun selectPosition(position: Int) {
+        switchFragment(fragments[position])
+    }
+
+    private fun switchFragment(targetFragment: Fragment) {
+        val transaction = supportFragmentManager.beginTransaction()
+        detachFragments(transaction)
+        if (!targetFragment.isAdded) {
+            // 如果没有添加则添加后显示
+            transaction.add(R.id.fragment, targetFragment)
+                .show(targetFragment)
+        } else {
+            transaction.show(targetFragment)
+        }
+        transaction
+            .setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+        try {
+            transaction.commitAllowingStateLoss()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+    }
+
+    private fun detachFragments(transaction: FragmentTransaction) {
+        for (i in fragments.indices) {
+            try {
+                transaction.hide(fragments[i])
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+
 
 }

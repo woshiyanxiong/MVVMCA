@@ -27,7 +27,7 @@ class SplashActivity: AppCompatActivity() {
         lifecycleScope.launch {
             delay(2000)
             navigationActivity(MainActivity::class.java)
-            finish()
+            this@SplashActivity.finish()
         }
     }
 }

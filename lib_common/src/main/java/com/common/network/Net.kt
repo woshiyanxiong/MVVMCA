@@ -52,11 +52,11 @@ object Net {
         }
         return OkHttpClient.Builder()
             .connectTimeout(timeOut, TimeUnit.SECONDS)
-
             .addInterceptor(headerInterceptor)
             .addInterceptor(HttpLogInterceptor())
             .writeTimeout(timeOut, TimeUnit.SECONDS)
             .readTimeout(timeOut, TimeUnit.SECONDS)
+            .cookieJar(MyCookiesJar())
             .build()
     }
 }
