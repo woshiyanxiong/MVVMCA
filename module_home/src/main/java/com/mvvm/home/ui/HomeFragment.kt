@@ -3,6 +3,10 @@ package com.mvvm.home.ui
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.common.base.BaseFragment
+import com.common.ext.init
+import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
+import com.ethanhua.skeleton.Skeleton
+import com.ethanhua.skeleton.SkeletonScreen
 import com.mvvm.home.adapter.HomeAdapter
 import com.mvvm.module_home.R
 import com.mvvm.module_home.databinding.FragmentHomeBinding
@@ -27,6 +31,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     override fun initView() {
         binding.recycleView.layoutManager = LinearLayoutManager(requireContext())
         binding.recycleView.adapter = adapter
+        val skeleton: RecyclerViewSkeletonScreen = Skeleton.bind(binding.recycleView).adapter(adapter)
+            .shimmer(true)
+            .angle(20)
+            .frozen(false)
+            .duration(1200)
+            .count(10)
+            .load(R.layout.skeleton_layout_home)
+            .show()
+        skeleton.init(this,viewModel.stateView)
     }
 
     override fun loadData() {

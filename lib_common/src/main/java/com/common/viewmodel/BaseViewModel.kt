@@ -67,9 +67,9 @@ open class BaseViewModel : BaseLifeViewModel() {
      */
     fun <T> async(
         request: suspend CoroutineScope.() -> T,
-        success: (T) -> Unit,
+        success: (T) -> Unit={},
         showDialog: Boolean = true,
-        error: suspend CoroutineScope.(BaseResponseThrowable) -> Unit,
+        error: suspend CoroutineScope.(BaseResponseThrowable) -> Unit={},
         complete: suspend CoroutineScope.() -> Unit = {
             if (showDialog) {
                 stateView.isLoading.value = false
@@ -89,6 +89,9 @@ open class BaseViewModel : BaseLifeViewModel() {
                 error(it)
             }, {
                 complete()
+                if (showDialog) {
+                    stateView.isLoading.value = false
+                }
             })
         }
     }

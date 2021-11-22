@@ -13,9 +13,9 @@ import io.reactivex.subjects.BehaviorSubject
 
 /**
  *create by 2020/9/16
- *@author yx
+ *@author yx 这里主要是处理rxjava的生命周期
  */
-open class BaseLifeViewModel () : ViewModel(),
+open class BaseLifeViewModel : ViewModel(),
     LifecycleScopeProvider<ViewEvent> {
     private val lifecycleEvents = BehaviorSubject.createDefault(ViewEvent.CREATED)
 

@@ -12,6 +12,13 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.coroutineScope
+import com.common.viewmodel.StateView
+import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
+import com.ethanhua.skeleton.ViewSkeletonScreen
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  *create by 2021/5/8
@@ -33,6 +40,32 @@ fun Fragment.navigationActivity(cl: Class<*>, bundle: Bundle) {
 
 fun Fragment.navigationActivity(cl: Class<*>) {
     startActivity(Intent(requireContext(), cl))
+}
+
+/**
+ * 骨架屏初始化
+ */
+fun ViewSkeletonScreen.init(owner: LifecycleOwner, view: StateView) {
+    view.isLoading.observe(owner, {
+        if (it)
+            show()
+        else
+            hide()
+    })
+}
+
+fun RecyclerViewSkeletonScreen.init(owner: LifecycleOwner, view: StateView) {
+    view.isLoading.observe(owner, {
+        if (it)
+            show()
+        else{
+            owner.lifecycle.coroutineScope.launch {
+                delay(2000)
+                hide()
+            }
+        }
+
+    })
 }
 
 /**
