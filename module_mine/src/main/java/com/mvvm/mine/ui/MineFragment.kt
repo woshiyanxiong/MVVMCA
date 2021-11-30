@@ -43,6 +43,6 @@ class MineFragment : BaseFragment<FragmentMineBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mapWindows.disses()
+        mapWindows.dismiss()
     }
 }

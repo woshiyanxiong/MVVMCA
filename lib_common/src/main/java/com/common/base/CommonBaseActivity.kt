@@ -1,6 +1,5 @@
 package com.common.base
 
-import android.app.Fragment
 import android.os.Bundle
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.ActionBar

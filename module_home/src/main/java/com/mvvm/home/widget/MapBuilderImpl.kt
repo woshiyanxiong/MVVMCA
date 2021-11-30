@@ -25,7 +25,7 @@ class MapBuilderImpl @Inject constructor()  : MapNavigation {
         mapWindows?.showView(view)
     }
 
-    override fun disses() {
+    override fun dismiss() {
         mapWindows?.dismiss()
     }
 

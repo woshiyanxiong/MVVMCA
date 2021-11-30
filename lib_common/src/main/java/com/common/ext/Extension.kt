@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.coroutineScope
@@ -160,7 +161,7 @@ fun TextView.setImageBottom(id: Int) {
  * @param color Int 颜色id
  */
 fun TextView.setColor(color: Int) {
-    setTextColor(context.resources.getColor(color))
+    setTextColor(ContextCompat.getColor(context,color))
 }
 
 /**

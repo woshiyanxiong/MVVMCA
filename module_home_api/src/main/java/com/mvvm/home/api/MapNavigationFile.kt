@@ -11,5 +11,5 @@ import android.view.View
 interface MapNavigation {
     fun createMap(content: Activity,onClick:(Int)->Unit={})
     fun show(view: View)
-    fun disses()
+    fun dismiss()
 }
