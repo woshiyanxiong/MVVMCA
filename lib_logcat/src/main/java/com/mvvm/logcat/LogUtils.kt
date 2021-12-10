@@ -16,6 +16,7 @@ object LogUtils {
     fun init(context: Context){
         logPath =context.getExternalFilesDir(null)
             ?.absolutePath + File.separator.toString() + "logan_v1"
+        Log.e("日志地址",logPath)
         val config: LoganConfig = LoganConfig.Builder()
             .setCachePath(context.filesDir.absolutePath)
             .setPath(logPath)
@@ -35,7 +36,7 @@ object LogUtils {
     }
 
     fun i(tag: String, msg: String) {
-
+        Log.e(tag,msg)
     }
 
     fun e(tag: String, msg: String) {

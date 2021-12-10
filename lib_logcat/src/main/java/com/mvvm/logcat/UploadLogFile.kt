@@ -8,7 +8,7 @@ import java.io.File
  * @date 2021/11/13/013 13:46
  * @description
  */
-class UploadLogFile: SendLogRunnable() {
+class UploadLogFile : SendLogRunnable() {
     override fun sendLog(logFile: File?) {
 
     }

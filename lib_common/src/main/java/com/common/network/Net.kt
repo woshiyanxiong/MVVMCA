@@ -1,5 +1,6 @@
 package com.common.network
 
+import com.common.BuildConfig
 import okhttp3.Interceptor
 import java.util.concurrent.TimeUnit
 
@@ -12,8 +13,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 object Net {
     private var retrofit: Retrofit? = null
     private var okHttpClient: OkHttpClient? = null
-    private var timeOut = 6000L
-    fun getRetrofit(baseUrl: String, time: Long = 6000L): Retrofit {
+    private var timeOut = 20000L
+    fun getRetrofit(baseUrl: String, time: Long = 20000L): Retrofit {
         timeOut = time
         if (null == retrofit) {
             if (null == okHttpClient) {
@@ -50,13 +51,19 @@ object Net {
             builder.addHeader("Authorization", "")
             chain.proceed(builder.build())
         }
-        return OkHttpClient.Builder()
+        val okhttpBuilder = OkHttpClient.Builder()
             .connectTimeout(timeOut, TimeUnit.SECONDS)
             .addInterceptor(headerInterceptor)
             .addInterceptor(HttpLogInterceptor())
             .writeTimeout(timeOut, TimeUnit.SECONDS)
             .readTimeout(timeOut, TimeUnit.SECONDS)
             .cookieJar(MyCookiesJar())
-            .build()
+        if (BuildConfig.DEBUG) {
+            okhttpBuilder.sslSocketFactory(
+                SSLSocketClient.sSLSocketFactory,
+                SSLSocketClient.trustManager[0]
+            )
+        }
+        return okhttpBuilder.build()
     }
 }

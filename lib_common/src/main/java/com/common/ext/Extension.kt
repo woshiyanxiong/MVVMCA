@@ -6,12 +6,14 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.coroutineScope
@@ -109,8 +111,8 @@ fun TextView.setImageRight(id: Int) {
         setCompoundDrawables(null, null, null, null)
         return
     }
-    val drawable: Drawable = resources.getDrawable(id)
-    drawable.setBounds(0, 0, drawable.minimumWidth, drawable.minimumHeight)
+    val drawable: Drawable? = ResourcesCompat.getDrawable(resources,id,null)
+    drawable?.setBounds(0, 0, drawable.minimumWidth, drawable.minimumHeight)
     setCompoundDrawables(null, null, drawable, null)
 }
 
@@ -120,8 +122,12 @@ fun TextView.setImageRight(id: Int) {
  * @param id Int
  */
 fun TextView.setImageTop(id: Int) {
-    val drawable: Drawable = resources.getDrawable(id)
-    drawable.setBounds(0, 0, drawable.minimumWidth, drawable.minimumHeight)
+    if (id == 0) {
+        setCompoundDrawables(null, null, null, null)
+        return
+    }
+    val drawable: Drawable? = ResourcesCompat.getDrawable(resources,id,null)
+    drawable?.setBounds(0, 0, drawable.minimumWidth, drawable.minimumHeight)
     setCompoundDrawables(null, drawable, null, null)
 }
 
@@ -175,7 +181,6 @@ fun String?.imageUrl(imageView: ImageView) {
     try {
         Thread {
             //new出对象
-            //new出对象
             val retriever = MediaMetadataRetriever()
             try {
                 retriever.setDataSource(this)
@@ -199,6 +204,23 @@ fun String?.imageUrl(imageView: ImageView) {
     } catch (e: Exception) {
         e.printStackTrace()
     } finally {
+    }
+
+}
+
+/**
+ * string转int，防止后台抽风 返回中文
+ * @receiver String?
+ * @return Int
+ */
+fun String?.getInt(): Int {
+    if (TextUtils.isEmpty(this)) {
+        return 0
+    }
+    return try {
+        this?.toInt() ?: 0
+    } catch (e: Exception) {
+        0
     }
 
 }

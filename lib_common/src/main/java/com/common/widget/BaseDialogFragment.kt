@@ -14,11 +14,12 @@ open class BaseDialogFragment : DialogFragment() {
     override fun show(manager: FragmentManager, tag: String?) {
         showAllowingStateLoss(manager, tag)
     }
+
     private fun showAllowingStateLoss(manager: FragmentManager, tag: String?) {
-        if (manager.isDestroyed){
+        if (manager.isDestroyed) {
             return
         }
-        if (isAdded){
+        if (isAdded) {
             this.dismiss()
         }
         try {
