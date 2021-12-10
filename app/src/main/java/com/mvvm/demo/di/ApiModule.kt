@@ -1,15 +1,12 @@
-package com.common.di
+package com.mvvm.demo.di
 
 import com.common.network.Net
-import com.common.network.api.UserApiService
-import dagger.Binds
+import com.mvvm.demo.api.UserApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dagger.multibindings.Multibinds
 import retrofit2.Retrofit
-import javax.inject.Singleton
 
 /**
  * Created by yan_x

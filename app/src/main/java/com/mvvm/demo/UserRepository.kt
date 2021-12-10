@@ -1,6 +1,6 @@
 package com.mvvm.demo
 
-import com.common.network.api.UserApiService
+import com.mvvm.demo.api.UserApiService
 import javax.inject.Inject
 
 /**
@@ -8,7 +8,7 @@ import javax.inject.Inject
  * @date 2021/11/10/010 14:55
  * @description
  */
-class UserRepository @Inject constructor(private val api:UserApiService) {
+class UserRepository @Inject constructor(private val api: UserApiService) {
 
     suspend fun login(name:String,pwd:String)=api.login(name,pwd)
 
