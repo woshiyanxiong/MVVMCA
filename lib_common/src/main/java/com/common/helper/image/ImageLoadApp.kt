@@ -23,6 +23,7 @@ object ImageLoadApp {
     fun loadImage(
         imageView: ImageView,
         url: String,
+        radius:Int=0,
         topLeftRound: Int = 0,
         toRightRound: Int = 0,
         bottomLeftRound: Int = 0,
@@ -32,6 +33,7 @@ object ImageLoadApp {
         imageConfig?.loadImage(
             imageView,
             url,
+            radius,
             topLeftRound,
             toRightRound,
             bottomLeftRound,
@@ -51,6 +53,7 @@ object ImageLoadApp {
     fun loadImage(
         imageView: ImageView,
         bitmap: Bitmap,
+        radius:Int=0,
         topLeftRound: Int = 0,
         toRightRound: Int = 0,
         bottomLeftRound: Int = 0,
@@ -60,6 +63,7 @@ object ImageLoadApp {
         imageConfig?.loadImage(
             imageView,
             bitmap,
+            radius,
             topLeftRound,
             toRightRound,
             bottomLeftRound,
@@ -71,6 +75,7 @@ object ImageLoadApp {
     fun loadImage(
         imageView: ImageView,
         res: Int,
+        radius:Int=0,
         topLeftRound: Int = 0,
         toRightRound: Int = 0,
         bottomLeftRound: Int = 0,
@@ -80,6 +85,7 @@ object ImageLoadApp {
         imageConfig?.loadImage(
             imageView,
             res,
+            radius,
             topLeftRound,
             toRightRound,
             bottomLeftRound,
@@ -91,6 +97,7 @@ object ImageLoadApp {
     fun loadImage(
         imageView: ImageView,
         res: Drawable,
+        radius:Int=0,
         topLeftRound: Int = 0,
         toRightRound: Int = 0,
         bottomLeftRound: Int = 0,
@@ -100,6 +107,7 @@ object ImageLoadApp {
         imageConfig?.loadImage(
             imageView,
             res,
+            radius,
             topLeftRound,
             toRightRound,
             bottomLeftRound,

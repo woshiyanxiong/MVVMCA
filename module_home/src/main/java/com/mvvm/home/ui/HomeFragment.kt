@@ -4,6 +4,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.common.base.BaseFragment
 import com.common.ext.init
+import com.common.ext.initLoading
 import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
 import com.ethanhua.skeleton.Skeleton
 import com.ethanhua.skeleton.SkeletonScreen
@@ -40,6 +41,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             .load(R.layout.skeleton_layout_home)
             .show()
         skeleton.init(this,viewModel.stateView)
+        requireActivity().initLoading(viewModel.stateView)
     }
 
     override fun loadData() {
