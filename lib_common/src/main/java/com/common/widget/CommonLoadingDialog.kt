@@ -18,14 +18,10 @@ import com.common.widget.port.LoadView
  * @date 2021/12/15/015 10:32
  * @description 这个放到baseActivity或者其他都行
  */
-class LoadingDialog(context: Context, style: Int = R.style.loadingDialog) : Dialog(context, style),
-    LoadView, LifecycleObserver {
+class CommonLoadingDialog(context: Context, style: Int = R.style.loadingDialog) : Dialog(context, style){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.dialog_layout)
-        if (context is AppCompatActivity) {
-            (context as AppCompatActivity).lifecycle.addObserver(this)
-        }
         val window: Window? = this.window
         val lp: WindowManager.LayoutParams? = window?.attributes
         lp?.gravity = Gravity.CENTER
@@ -45,10 +41,4 @@ class LoadingDialog(context: Context, style: Int = R.style.loadingDialog) : Dial
             dismiss()
         }
     }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onDestroy() {
-        dismiss()
-    }
-
 }

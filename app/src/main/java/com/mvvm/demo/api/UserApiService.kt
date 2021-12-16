@@ -4,8 +4,6 @@ import com.common.BaseResponse
 import com.common.LoginBeanData
 import retrofit2.http.POST
 import retrofit2.http.Query
-import retrofit2.http.Url
-import javax.inject.Inject
 
 /**
  * Created by yan_x

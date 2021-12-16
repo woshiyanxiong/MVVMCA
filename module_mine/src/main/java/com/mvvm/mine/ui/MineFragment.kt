@@ -3,6 +3,7 @@ package com.mvvm.mine.ui
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import com.common.base.BaseFragment
+import com.common.helper.image.ImageLoadApp
 import com.mvvm.home.HomePath
 import com.mvvm.home.api.MapNavigation
 
@@ -24,6 +25,8 @@ class MineFragment : BaseFragment<FragmentMineBinding>() {
 
     override fun getLayout(): Int = R.layout.fragment_mine
 
+    private val imageUrl="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fitem%2F201906%2F27%2F20190627073618_hppyq.thumb.400_0.jpg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1642234000&t=d55876f66955deeee1fdee8740c817c8"
+
     private val viewModel: MineViewModel by viewModels()
 
     override fun initView() {
@@ -34,7 +37,7 @@ class MineFragment : BaseFragment<FragmentMineBinding>() {
         binding.show.setOnClickListener {
             mapWindows.show(binding.root)
         }
-
+        ImageLoadApp.loadImage(binding.image,imageUrl)
     }
 
     override fun loadData() {

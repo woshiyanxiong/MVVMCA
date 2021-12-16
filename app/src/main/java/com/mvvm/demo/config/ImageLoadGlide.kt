@@ -11,7 +11,7 @@ import com.common.helper.image.ImageStrategy
  * @date 2021/12/15/015 11:41
  * @description
  */
-class ImageLoadConfig : ImageStrategy {
+class ImageLoadGlide : ImageStrategy {
     override fun loadImage(
         imageView: ImageView,
         url: String,

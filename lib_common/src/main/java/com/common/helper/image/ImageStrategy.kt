@@ -13,20 +13,19 @@ import androidx.annotation.DrawableRes
 interface ImageStrategy {
 
     /**
-     *
      * @param imageView ImageView
-     * @param url String
-     * @param radius Int
-     * @param topLeftRound Int
-     * @param toRightRound Int
-     * @param bottomLeftRound Int
-     * @param bottomRightRound Int
+     * @param url String 图片地址
+     * @param radius Int 圆角
+     * @param topLeftRound Int 上左圆角
+     * @param toRightRound Int 上右圆角
+     * @param bottomLeftRound Int 下左圆角
+     * @param bottomRightRound Int 下右圆角
      * 如果同时设置[radius]或[topLeftRound]等具体方位的圆角，谁优先级高看个人了
      */
     fun loadImage(
         imageView: ImageView,
         url: String,
-        radius:Int=0,
+        radius: Int = 0,
         topLeftRound: Int = 0,
         toRightRound: Int = 0,
         bottomLeftRound: Int = 0,
@@ -36,14 +35,14 @@ interface ImageStrategy {
     fun loadImage(
         imageView: ImageView,
         url: String,
-        radius:Int
+        radius: Int
     )
 
 
     fun loadImage(
         imageView: ImageView,
         bitmap: Bitmap,
-        radius:Int=0,
+        radius: Int = 0,
         topLeftRound: Int = 0,
         toRightRound: Int = 0,
         bottomLeftRound: Int = 0,
@@ -53,7 +52,7 @@ interface ImageStrategy {
     fun loadImage(
         imageView: ImageView,
         @DrawableRes res: Int,
-        radius:Int=0,
+        radius: Int = 0,
         topLeftRound: Int = 0,
         toRightRound: Int = 0,
         bottomLeftRound: Int = 0,
@@ -63,7 +62,7 @@ interface ImageStrategy {
     fun loadImage(
         imageView: ImageView,
         res: Drawable,
-        radius:Int=0,
+        radius: Int = 0,
         topLeftRound: Int = 0,
         toRightRound: Int = 0,
         bottomLeftRound: Int = 0,

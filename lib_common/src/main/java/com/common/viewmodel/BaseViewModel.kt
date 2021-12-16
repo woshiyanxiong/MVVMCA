@@ -18,28 +18,6 @@ open class BaseViewModel : BaseLifeViewModel() {
     private fun launchUi(block: suspend CoroutineScope.() -> Unit) =
         viewModelScope.launch { block() }
 
-//    /**
-//     * 直接获取结果的
-//     */
-//    fun <T> async(
-//        request: suspend CoroutineScope.() -> T,
-//        success: (T) -> Unit,
-//        error: suspend CoroutineScope.(BaseResponseThrowable) -> Unit={},
-//        complete: suspend CoroutineScope.() -> Unit = {}
-//    ) {
-//        launchUi {
-//            handleRequest(withContext(Dispatchers.IO) {
-//                request
-//            }, {
-//                success(it)
-//            }, {
-//                error(it)
-//            }, {
-//                complete()
-//            })
-//        }
-//    }
-
     //过滤结果
     fun <T> asyncExecute(
         request: suspend CoroutineScope.() -> BaseResponse<T>,
