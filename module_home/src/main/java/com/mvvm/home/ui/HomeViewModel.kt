@@ -24,6 +24,6 @@ class HomeViewModel @Inject constructor(private val repository: HomeRepository) 
             repository.getHomeInfoList(0)
         }, {
             homeData.addAll(it.data.datas)
-        },showDialog = true)
+        }, showDialog = true)
     }
 }

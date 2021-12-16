@@ -24,10 +24,5 @@ object ApiModule {
     fun providerUserService(): UserApiService {
         return providerRetrofit().create(UserApiService::class.java)
     }
-//
-//    @Provides
-//    @JvmStatic
-//    fun providerHomeService():UserApiService{
-//        return providerRetrofit().create(UserApiService::class.java)
-//    }
+
 }

@@ -7,7 +7,6 @@ import com.common.ext.init
 import com.common.ext.initLoading
 import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
 import com.ethanhua.skeleton.Skeleton
-import com.ethanhua.skeleton.SkeletonScreen
 import com.mvvm.home.adapter.HomeAdapter
 import com.mvvm.module_home.R
 import com.mvvm.module_home.databinding.FragmentHomeBinding
