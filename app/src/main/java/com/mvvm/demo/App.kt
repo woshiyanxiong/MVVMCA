@@ -8,6 +8,7 @@ import com.mvvm.demo.config.ImageLoadGlide
 import com.mvvm.logcat.CrashHandler
 import dagger.hilt.android.HiltAndroidApp
 import com.mvvm.logcat.LogUtils
+import com.mvvm.logcat.utils.LogcatUtils
 
 
 /**
@@ -22,6 +23,15 @@ class App : CommonApp() {
         CrashHandler.getInstance().init(this)
         LogUtils.init(this)
 //        LoadingConfig.initLoadingView(AppLoadingView())
+        //图片加载引擎
         ImageLoadConfig.init(ImageLoadGlide())
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (BuildConfig.DEBUG){
+            LogcatUtils.stop(this)
+        }
+    }
+
 }

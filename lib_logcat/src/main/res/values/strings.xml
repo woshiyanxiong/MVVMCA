@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">LogViewer</string>
+    <string name="create_log_file_failed">Create log file failed</string>
+    <string name="not_support_on_this_device">该设备不支持</string>
+    <string-array name="logcat_spinner">
+        <item>Verbose</item>
+        <item>Debug</item>
+        <item>Info</item>
+        <item>Warning</item>
+        <item>Error</item>
+        <item>Fatal</item>
+    </string-array>
+
+    <string-array name="filter">
+        <item>不过滤</item>
+        <item>kklv</item>
+        <item>xthkL</item>
+        <item>ONLINE_TAG</item>
+    </string-array>
+
+</resources>

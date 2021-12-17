@@ -88,7 +88,12 @@ open class CommonApp : Application() {
             moduleList?.forEach {
                 it.onDestroy()
             }
+            onDestroy()
         }
+    }
+
+    open fun onDestroy(){
+
     }
 
 }
