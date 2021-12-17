@@ -26,12 +26,4 @@ class App : CommonApp() {
         //图片加载引擎
         ImageLoadConfig.init(ImageLoadGlide())
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (BuildConfig.DEBUG){
-            LogcatUtils.stop(this)
-        }
-    }
-
 }
