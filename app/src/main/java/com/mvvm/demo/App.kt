@@ -8,6 +8,7 @@ import com.mvvm.demo.config.ImageLoadGlide
 import com.mvvm.logcat.CrashHandler
 import dagger.hilt.android.HiltAndroidApp
 import com.mvvm.logcat.LogUtils
+import com.mvvm.logcat.XlogConfig
 import com.mvvm.logcat.utils.LogcatUtils
 
 
@@ -21,7 +22,7 @@ class App : CommonApp() {
     override fun onCreate() {
         super.onCreate()
         CrashHandler.getInstance().init(this)
-        LogUtils.init(this)
+        XlogConfig.init(this)
 //        LoadingConfig.initLoadingView(AppLoadingView())
         //图片加载引擎
         ImageLoadConfig.init(ImageLoadGlide())

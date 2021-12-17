@@ -1,6 +1,9 @@
 package com.common.network;
+import android.nfc.Tag;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.mvvm.logcat.LogUtils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -59,10 +62,9 @@ public class HttpLogInterceptor implements Interceptor {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    buffer.append("\n 返回结果------\n"+
-                            resp+"\n"+
-                            "\n********响应日志结束********");
+                    buffer.append("\n 返回结果------\n");
                     logLong(buffer.toString());
+                    LogUtils.INSTANCE.netGson(TAG,resp.toString(),"");
                     body = ResponseBody.create(mediaType, resp);
                     return response.newBuilder().body(body).build();
                 } else {

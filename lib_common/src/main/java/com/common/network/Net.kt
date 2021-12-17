@@ -42,7 +42,7 @@ object Net {
         val logging = HttpLoggingInterceptor()
 
         logging.level = HttpLoggingInterceptor.Level.BODY
-        if (LogUtils.isDebug) {
+        if (BuildConfig.DEBUG) {
             loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         }
         val headerInterceptor = Interceptor { chain ->

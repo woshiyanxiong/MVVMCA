@@ -1,6 +1,9 @@
 package com.mvvm.logcat
 
+import android.util.Log
 import com.dianping.logan.SendLogRunnable
+import com.mvvm.logcat.utils.AESUtils
+import com.mvvm.logcat.utils.LogFileUtils
 import java.io.File
 
 /**
@@ -10,6 +13,8 @@ import java.io.File
  */
 class UploadLogFile : SendLogRunnable() {
     override fun sendLog(logFile: File?) {
+        val file= LogFileUtils.bytes2File(AESUtils.decryptData("0123456789012345", LogFileUtils.file2Bytes(logFile?.absolutePath)),logFile?.absolutePath)
+        Log.e("jie mie de wenjian",file.absolutePath)
 
     }
 }

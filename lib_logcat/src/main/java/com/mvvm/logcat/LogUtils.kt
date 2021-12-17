@@ -4,7 +4,12 @@ import android.content.Context
 import android.util.Log
 import com.dianping.logan.Logan
 import com.dianping.logan.LoganConfig
+import com.elvishew.xlog.XLog
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.File
+import java.lang.Character.LINE_SEPARATOR
 
 /**
  * Created by yan_x
@@ -12,42 +17,90 @@ import java.io.File
  * @description
  */
 object LogUtils {
-    private var logPath=""
-    fun init(context: Context){
-        logPath =context.getExternalFilesDir(null)
+    private var logPath = ""
+    private val LINE_SEPARATOR: String = System.getProperty("line.separator")
+    fun init(context: Context) {
+        logPath = context.getExternalFilesDir(null)
             ?.absolutePath + File.separator.toString() + "logan_v1"
-        Log.e("日志地址",logPath)
-        val config: LoganConfig = LoganConfig.Builder()
-            .setCachePath(context.filesDir.absolutePath)
-            .setPath(logPath)
-            .setEncryptKey16("0123456789012345".toByteArray())
-            .setEncryptIV16("0123456789012345".toByteArray())
-            .setMaxFile(10)
-            .setDay(3)
-            .build()
-        Logan.init(config)
-        Logan.setDebug(false)
-
+        Log.e("日志地址", logPath)
     }
 
     fun d(tag: String, msg: String) {
-        Logan.w(msg,3)
-//        Log.e(tag,msg)
+        XLog.d(tag, msg)
     }
 
     fun i(tag: String, msg: String) {
-        Log.e(tag,msg)
+        XLog.i(tag, msg)
     }
 
-    fun e(tag: String, msg: String) {
-
+    fun e(msg: String) {
+        XLog.e(msg)
     }
 
     fun v(tag: String, msg: String) {
+        XLog.v(tag, msg)
+    }
+
+    fun gson(msg: String) {
+        val jsonObject = JSONObject(msg)
+        XLog.json(jsonObject.toString())
+    }
+
+    fun netGson(tag: String?, msg: String, headString: String){
+        printJson(tag, msg, headString)
+    }
+
+
+    fun logAll() {
 
     }
-    fun logAll(){
-        val map: Map<String, Long> = Logan.getAllFilesInfo()
-        Log.e("所有日志",map.toString())
+
+    fun getLocalFle(): String {
+        return logPath
+    }
+
+    fun ffff() {
+        Logan.s(arrayOf("2021-12-17"), UploadLogFile());
+    }
+
+    private fun printLine(tag: String?, isTop: Boolean) {
+        if (isTop) {
+            Log.e(
+                tag,
+                "╔═══════════════════════════════════════════════════════════════════════════════════════"
+            )
+        } else {
+            Log.e(
+                tag,
+                "╚═══════════════════════════════════════════════════════════════════════════════════════"
+            )
+        }
+    }
+
+    private fun printJson(tag: String?, msg: String, headString: String) {
+        var message: String = try {
+            when {
+                msg.startsWith("{") -> {
+                    val jsonObject = JSONObject(msg)
+                    jsonObject.toString(4) //最重要的方法，就一行，返回格式化的json字符串，其中的数字4是缩进字符数
+                }
+                msg.startsWith("[") -> {
+                    val jsonArray = JSONArray(msg)
+                    jsonArray.toString(4)
+                }
+                else -> {
+                    msg
+                }
+            }
+        } catch (e: JSONException) {
+            msg
+        }
+        printLine(tag, true)
+        message = headString + LINE_SEPARATOR + message
+        val lines: Array<String> = message.split(LINE_SEPARATOR).toTypedArray()
+        for (line in lines) {
+            Log.e(tag, "║ $line")
+        }
+        printLine(tag, false)
     }
 }
