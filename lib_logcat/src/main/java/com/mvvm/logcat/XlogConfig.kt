@@ -1,6 +1,7 @@
 package com.mvvm.logcat
 
 import android.content.Context
+import android.os.PatternMatcher
 import android.util.Log
 import com.elvishew.xlog.XLog
 
@@ -20,6 +21,7 @@ import com.elvishew.xlog.interceptor.BlacklistTagsFilterInterceptor
 
 import com.elvishew.xlog.LogConfiguration
 import com.elvishew.xlog.LogLevel
+import com.elvishew.xlog.flattener.PatternFlattener
 import com.elvishew.xlog.formatter.message.json.DefaultJsonFormatter
 import com.elvishew.xlog.printer.Printer
 import java.io.File
@@ -38,7 +40,7 @@ object XlogConfig {
         Log.e("日志地址", logPath)
         val config = LogConfiguration.Builder()
             .logLevel(
-                if (BuildConfig.DEBUG) LogLevel.VERBOSE // 指定日志级别，低于该级别的日志将不会被打印，默认为 LogLevel.ALL
+                if (BuildConfig.DEBUG) LogLevel.ALL // 指定日志级别，低于该级别的日志将不会被打印，默认为 LogLevel.ALL
                 else LogLevel.NONE
             )
             .tag("MY_TAG") // 指定 TAG，默认为 "X-LOG"
@@ -71,7 +73,7 @@ object XlogConfig {
             .fileNameGenerator(DateFileNameGenerator()) // 指定日志文件名生成器，默认为 ChangelessFileNameGenerator("log")
             .backupStrategy(NeverBackupStrategy()) // 指定日志文件备份策略，默认为 FileSizeBackupStrategy(1024 * 1024)
             .cleanStrategy(FileLastModifiedCleanStrategy(3 * 24 * 60 * 60 * 1000)) // 指定日志文件清除策略，默认为 NeverCleanStrategy()
-//            .flattener(MyFlattener()) // 指定日志平铺器，默认为 DefaultFlattener
+            .flattener(PatternFlattener("{d yyyy-MM-dd HH:mm:ss} {L}/{E}: {m}")) // 指定日志平铺器，默认为 DefaultFlattener
 //            .writer(MyWriter()) // 指定日志写入器，默认为 SimpleWriter
             .build()
 

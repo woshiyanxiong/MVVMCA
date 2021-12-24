@@ -48,6 +48,7 @@ public class HttpLogInterceptor implements Interceptor {
         Response.Builder builder = response.newBuilder();
         Response clone = builder.build();
         StringBuffer buffer=new StringBuffer();
+
         buffer.append("响应url:"+ clone.request().url()+
                 "\n code:" + clone.code()+
                 "\n message:" + clone.message().toString());

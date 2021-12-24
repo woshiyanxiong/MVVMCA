@@ -46,8 +46,10 @@ object LogUtils {
         XLog.json(jsonObject.toString())
     }
 
-    fun netGson(tag: String?, msg: String, headString: String){
-        printJson(tag, msg, headString)
+    @Synchronized
+    fun netGson(tag: String?, msg: String, headString: String) {
+        if (BuildConfig.DEBUG)
+            printJson(tag, msg, headString)
     }
 
 
@@ -61,6 +63,20 @@ object LogUtils {
 
     fun ffff() {
         Logan.s(arrayOf("2021-12-17"), UploadLogFile());
+    }
+
+    fun logRequest(tag: String?, msg: String, type: Int) {
+        if (type == 0) {
+            printLine(tag, true)
+            Log.e(tag, msg)
+        }
+        if (type == 1) {
+            Log.e(tag, msg)
+            printLine(tag, false)
+        }
+        if (type == 2) {
+            Log.e(tag, "║ ${msg}")
+        }
     }
 
     private fun printLine(tag: String?, isTop: Boolean) {
