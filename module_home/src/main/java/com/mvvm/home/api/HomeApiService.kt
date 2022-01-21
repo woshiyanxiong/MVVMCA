@@ -1,6 +1,6 @@
 package com.mvvm.home.api
 
-import com.common.BaseResponse
+import com.common.BaseResult
 import com.mvvm.home.bean.HomeResponse
 
 
@@ -14,5 +14,5 @@ import retrofit2.http.Path
  */
 interface HomeApiService {
     @GET("/article/list/{pageNum}/json")
-    suspend fun getInfoList(@Path("pageNum") pageNum: Int=0): BaseResponse<HomeResponse>
+    suspend fun getInfoList(@Path("pageNum") pageNum: Int=0): BaseResult<HomeResponse>
 }

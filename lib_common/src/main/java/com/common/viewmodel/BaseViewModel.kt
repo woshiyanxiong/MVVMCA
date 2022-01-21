@@ -1,7 +1,7 @@
 package com.common.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.common.BaseResponse
+import com.common.BaseResult
 import com.common.network.throwe.BaseResponseThrowable
 import com.common.network.throwe.ThrowableHandler
 import kotlinx.coroutines.*
@@ -20,7 +20,7 @@ open class BaseViewModel : BaseLifeViewModel() {
 
     //过滤结果
     fun <T> asyncExecute(
-        request: suspend CoroutineScope.() -> BaseResponse<T>,
+        request: suspend CoroutineScope.() -> BaseResult<T>,
         success: (T) -> Unit,
         error: suspend CoroutineScope.(BaseResponseThrowable) -> Unit,
         complete: suspend CoroutineScope.() -> Unit = {}
@@ -94,12 +94,12 @@ open class BaseViewModel : BaseLifeViewModel() {
 
     //过滤返回数据
     private suspend fun <T> executeResponse(
-        response: BaseResponse<T>,
+        response: BaseResult<T>,
         success: suspend CoroutineScope.(T) -> Unit
     ) {
         coroutineScope {
-            if (response.code == 200) success(response.data)
-            else throw BaseResponseThrowable(response.code, response.errorMsg)
+            if (response.getCode() == 200) response.getData()?.let { success(it) }
+            else throw BaseResponseThrowable(response.getCode(), response.getMsg())
         }
     }
 }

@@ -16,19 +16,19 @@ import okhttp3.CookieJar
  */
 class MyCookiesJar : CookieJar {
     // 持久化的存储 Cookie的类
-    private val cookieStore: HashMap<String, MutableList<Cookie>> = HashMap()
+    private val cookieStore: HashMap<String, List<Cookie>> = HashMap()
 
-    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>?) {
+    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
         if (cookies != null && cookies.isNotEmpty()) {
-            val host = url.host()
+            val host = url.host
             for (item in cookies) {
 
                 // 给 Webview 中传入Cookie
                 CookieManager.getInstance().setAcceptCookie(true)
                 //TODO ...ZJT  替换下面的代码
                 CookieManager.getInstance().setCookie(
-                    item.domain(),
-                    item.name() + "=" + item.value() + "; domain=" + item.domain() + "; path=" + item.path()
+                    item.domain,
+                    item.name + "=" + item.value + "; domain=" + item.domain + "; path=" + item.path
                 )
                 //                CookieManager.getInstance().setCookie(host, item.value());
             }
@@ -42,11 +42,12 @@ class MyCookiesJar : CookieJar {
         }
     }
 
-    override fun loadForRequest(url: HttpUrl?): MutableList<Cookie>? {
-        return cookieStore[url?.host()]?:ArrayList<Cookie>()
+    override fun loadForRequest(url: HttpUrl): List<Cookie> {
+        return cookieStore[url.host]?:ArrayList<Cookie>()
     }
 
     companion object {
         private const val TAG = "CookiesManager"
     }
+
 }

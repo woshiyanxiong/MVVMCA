@@ -1,6 +1,7 @@
 package com.mvvm.home.repository
 
 
+import com.common.ext.getResponse
 import com.mvvm.home.api.HomeApiService
 import javax.inject.Inject
 
@@ -10,6 +11,7 @@ import javax.inject.Inject
  * @description
  */
 class HomeRepository @Inject constructor(private val api: HomeApiService) {
-
-    suspend fun getHomeInfoList(pageNum:Int) = api.getInfoList(pageNum)
+    suspend fun getHomeInfoList(pageNum: Int) = getResponse {
+        api.getInfoList(pageNum)
+    }
 }

@@ -1,6 +1,6 @@
 package com.mvvm.mine.api
 
-import com.common.BaseResponse
+import com.common.BaseResult
 import retrofit2.http.GET
 
 /**
@@ -10,5 +10,5 @@ import retrofit2.http.GET
  */
 interface MineApiService {
     @GET("/user/lg/userinfo/json")
-    suspend fun getUserInfo(): BaseResponse<String>
+    suspend fun getUserInfo(): BaseResult<String>
 }
