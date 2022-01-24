@@ -12,4 +12,13 @@
         </attr>
         <attr name="msv_animateViewChanges" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="TagFlexboxLayout">
+        <attr name="tagBackground" format="reference"/>
+        <attr name="tagTextSize" format="dimension"/>
+        <attr name="tagTextColor" format="reference|color"/>
+        <attr name="tagPadding" format="dimension"/>
+        <attr name="tagSpacing" format="dimension"/>
+        <attr name="tagMaxLine" format="integer" />
+    </declare-styleable>
 </resources>

@@ -31,15 +31,6 @@ open class BaseDialogFragment : DialogFragment() {
         } catch (e: IllegalAccessException) {
             e.printStackTrace()
         }
-        try {
-            val shown: Field = DialogFragment::class.java.getDeclaredField("mShownByMe")
-            shown.isAccessible = true
-            shown.set(this, true)
-        } catch (e: NoSuchFieldException) {
-            e.printStackTrace()
-        } catch (e: IllegalAccessException) {
-            e.printStackTrace()
-        }
         val ft: FragmentTransaction = manager.beginTransaction()
         ft.add(this, tag)
         ft.commitAllowingStateLoss()

@@ -95,4 +95,7 @@ dependencies {
 //    骨架屏
     api 'com.ethanhua:skeleton:1.1.2'
     api 'io.supercharge:shimmerlayout:2.1.0'
+
+
+    api 'com.google.android:flexbox:2.0.1'
 }
