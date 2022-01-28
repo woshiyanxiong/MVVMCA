@@ -172,7 +172,7 @@ class TagFlexboxLayout : FlexboxLayout {
 }
 
 @BindingAdapter(value = ["TageFlexboxData"])
-fun setYuPaoFlexboxTagData(view: TagFlexboxLayout, data: List<String>?) {
+fun setTageFlexboxTagData(view: TagFlexboxLayout, data: List<String>?) {
     data?.let {
         view.setData(it as ArrayList<String>)
     }
