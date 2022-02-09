@@ -14,14 +14,15 @@ import java.util.*
  *
  * @author yx
  */
-abstract class CommonBaseActivity<VB: ViewDataBinding>:AppCompatActivity(){
-    lateinit var binding: VB
+abstract class CommonBaseActivity<VB : ViewDataBinding> : AppCompatActivity() {
+    var binding: VB? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView<VB>(this, getLayout())
-        binding.lifecycleOwner=this
+        binding?.lifecycleOwner = this
         initView()
     }
+
     @LayoutRes
     protected abstract fun getLayout(): Int
 

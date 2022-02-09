@@ -1,5 +1,6 @@
 package com.mvvm.demo
 
+import com.common.ext.getResponse
 import com.mvvm.demo.api.UserApiService
 import javax.inject.Inject
 
@@ -10,8 +11,11 @@ import javax.inject.Inject
  */
 class UserRepository @Inject constructor(private val api: UserApiService) {
 
-    suspend fun login(name:String,pwd:String)=api.login(name,pwd)
+    suspend fun login(name: String, pwd: String) = getResponse {
+        api.login(name, pwd)
+    }
 
-    suspend fun registered(name:String,pwd:String,rePwd:String)=api.registered(name,pwd,rePwd)
+    suspend fun registered(name: String, pwd: String, rePwd: String) =
+        api.registered(name, pwd, rePwd)
 
 }

@@ -25,9 +25,9 @@ class MainActivity: BaseActivity<ActivityMainBinding>(){
     override fun getLayout(): Int = R.layout.activity_main
 
     override fun initView() {
-        lifecycleScope.launch{
-            repository.login("yanxiong","123456")
-        }
+//        lifecycleScope.launch{
+//            repository.login("yanxiong","123456")
+//        }
         initTab()
     }
 
@@ -35,7 +35,7 @@ class MainActivity: BaseActivity<ActivityMainBinding>(){
         fragments.add(HomeFragment())
         fragments.add(MineFragment())
         selectPosition(0)
-        binding.bvNavigation.setOnItemSelectedListener { item ->
+        binding?.bvNavigation?.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> {
                     selectPosition(0)

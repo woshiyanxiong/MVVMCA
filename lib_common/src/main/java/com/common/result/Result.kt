@@ -65,12 +65,12 @@ inline fun <reified T> Result<T>.updateOnSuccess(liveData: MutableLiveData<T>) {
 
 fun Result<*>.handle(
     loading: ((Result.Loading) -> Unit)? = null,
-    success: ((Result.Success<*>) -> Unit)? = null,
+    success: ((Success<*>) -> Unit)? = null,
     error: ((Result.Error) -> Unit)? = null
 ) {
     when (this) {
         is Result.Loading -> loading?.invoke(this)
-        is Result.Success<*> -> success?.invoke(this)
+        is Success<*> -> success?.invoke(this)
         is Result.Error -> error?.invoke(this)
     }
 }

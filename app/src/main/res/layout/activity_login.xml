@@ -1,9 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <EditText
+            android:id="@+id/userName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="yanxiong"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/pwd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="123456"
+            app:layout_constraintTop_toBottomOf="@+id/userName" />
+
+        <Button
+            android:id="@+id/login"
+            android:layout_width="@dimen/dp_120"
+            android:layout_height="@dimen/dp_48"
+            android:layout_marginTop="20dp"
+            android:text="login"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pwd" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -40,7 +40,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             .load(R.layout.skeleton_layout_home)
             .show()
         skeleton.init(this,viewModel.stateView)
-        requireActivity().initLoading(viewModel.stateView)
     }
 
     override fun loadData() {

@@ -19,14 +19,14 @@ import kotlinx.coroutines.launch
  */
 @SuppressLint("CustomSplashScreen")
 @AndroidEntryPoint
-class SplashActivity: AppCompatActivity() {
+class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
         window.decorView.background = ColorDrawable(Color.parseColor("#ffffff"))
         lifecycleScope.launch {
             delay(2000)
-            navigationActivity(MainActivity::class.java)
+            navigationActivity(LoginActivity::class.java)
             this@SplashActivity.finish()
         }
     }
