@@ -21,7 +21,7 @@ import kotlin.contracts.contract
  * 必须清空队列，否则会存在内存泄漏(最好用对象)
  * 使用优先级队列非线程安全，一定要在主线程使用
  */
-class DialogManager private constructor() {
+class DialogManager {
     //    //弹窗队列(线程安全)
 //    private val queue = ConcurrentLinkedQueue<OrderDialog>()
     private val queue =
@@ -39,7 +39,7 @@ class DialogManager private constructor() {
         }
     }
 
-    var isCanShow: Boolean = true
+    private var isCanShow: Boolean = true
         set(value) {
             field = value
             field.yes {
@@ -136,7 +136,6 @@ class DialogManager private constructor() {
         mDialogBase = queue.element()
         if (mDialogBase != null && mDialogBase!!.isShowing().not()) {
             mDialogBase?.show()
-        } else {
         }
     }
 
@@ -149,7 +148,7 @@ class DialogManager private constructor() {
     /**
      * 提供外部下一个任务的方法,在弹窗消失时候调用
      */
-    fun nextTask() {
+    private fun nextTask() {
         removeTopTask()
         startNextIf()
     }
@@ -218,7 +217,7 @@ interface OrderDialog {
 }
 
 @OptIn(ExperimentalContracts::class)
-inline fun Boolean?.yes(block: () -> Unit): Boolean? {
+private inline fun Boolean?.yes(block: () -> Unit): Boolean? {
     contract {
         callsInPlace(block, InvocationKind.AT_MOST_ONCE)
     }
@@ -227,7 +226,7 @@ inline fun Boolean?.yes(block: () -> Unit): Boolean? {
 }
 
 @OptIn(ExperimentalContracts::class)
-inline fun Boolean?.no(block: () -> Unit): Boolean? {
+private inline fun Boolean?.no(block: () -> Unit): Boolean? {
     contract {
         callsInPlace(block, InvocationKind.AT_MOST_ONCE)
     }

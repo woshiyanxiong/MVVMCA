@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import com.common.base.AppLifecycleObserve
+import com.tencent.mmkv.MMKV
 import java.util.*
 
 /**
