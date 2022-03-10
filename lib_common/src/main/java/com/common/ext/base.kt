@@ -6,12 +6,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.common.BaseResult
 import com.common.network.RequestObserver
 import com.common.network.throwe.BaseResponseThrowable
 import com.common.result.BaseResponse
-import com.common.result.Result
-import com.common.result.data
+import com.common.result.ReSource
 import com.common.result.handle
 import com.common.viewmodel.StateView
 import com.uber.autodispose.SingleSubscribeProxy
@@ -76,26 +74,26 @@ fun <T> SingleSubscribeProxy<T>.subscribes(
     subscribe(observer)
 }
 
-fun <Response, T : BaseResponse<Response>> getResponse(fetchData: suspend () -> T): Flow<Result<Response?>> {
+fun <Response, T : BaseResponse<Response>> getResponse(fetchData: suspend () -> T): Flow<ReSource<Response?>> {
     return flow {
         try {
-            emit(Result.Loading)
+            emit(ReSource.Loading)
             val data = fetchData()
             if (data.getRequestOk()) {
-                emit(Result.Success(data.getData()))
+                emit(ReSource.Success(data.getData()))
             } else {
-                emit(Result.Error(code = data.getCode(), msg = data.getMsg()))
+                emit(ReSource.Error(code = data.getCode(), msg = data.getMsg()))
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(Result.Error(exception = e))
+            emit(ReSource.Error(exception = e))
         }
     }.flowOn(Dispatchers.IO)
 }
 
 fun <T> ViewModel.launch(
-    block: suspend CoroutineScope.() -> Flow<Result<T>>,
-    success:(Result<T>) -> Unit,
+    block: suspend CoroutineScope.() -> Flow<ReSource<T>>,
+    success:(ReSource<T>) -> Unit,
     stateView: StateView?=null
 ) {
     viewModelScope.launch {

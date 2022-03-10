@@ -17,23 +17,23 @@
 package com.common.result
 
 import androidx.lifecycle.MutableLiveData
-import com.common.result.Result.Success
+import com.common.result.ReSource.Success
 
 /**
  * A generic class that holds a value with its loading status.
  * @param <T>
  */
-sealed class Result<out R> {
+sealed class ReSource<out R> {
 
-    data class Success<out T>(val data: T) : Result<T>()
+    data class Success<out T>(val data: T) : ReSource<T>()
     data class Error(
         val code: Int = 200,
         val msg: String = "",
         val exception: Exception? = null
     ) :
-        Result<Nothing>()
+        ReSource<Nothing>()
 
-    object Loading : Result<Nothing>()
+    object Loading : ReSource<Nothing>()
 
     override fun toString(): String {
         return when (this) {
@@ -45,32 +45,32 @@ sealed class Result<out R> {
 }
 
 /**
- * [Success.data] if [Result] is of type [Success]
+ * [Success.data] if [ReSource] is of type [Success]
  */
-fun <T> Result<T>.successOr(fallback: T): T {
+fun <T> ReSource<T>.successOr(fallback: T): T {
     return (this as? Success<T>)?.data ?: fallback
 }
 
-val <T> Result<T>.data: T?
+val <T> ReSource<T>.data: T?
     get() = (this as? Success)?.data
 
 /**
- * Updates value of [liveData] if [Result] is of type [Success]
+ * Updates value of [liveData] if [ReSource] is of type [Success]
  */
-inline fun <reified T> Result<T>.updateOnSuccess(liveData: MutableLiveData<T>) {
+inline fun <reified T> ReSource<T>.updateOnSuccess(liveData: MutableLiveData<T>) {
     if (this is Success) {
         liveData.value = data
     }
 }
 
-fun Result<*>.handle(
-    loading: ((Result.Loading) -> Unit)? = null,
+fun ReSource<*>.handle(
+    loading: ((ReSource.Loading) -> Unit)? = null,
     success: ((Success<*>) -> Unit)? = null,
-    error: ((Result.Error) -> Unit)? = null
+    error: ((ReSource.Error) -> Unit)? = null
 ) {
     when (this) {
-        is Result.Loading -> loading?.invoke(this)
+        is ReSource.Loading -> loading?.invoke(this)
         is Success<*> -> success?.invoke(this)
-        is Result.Error -> error?.invoke(this)
+        is ReSource.Error -> error?.invoke(this)
     }
 }
