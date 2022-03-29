@@ -2,6 +2,7 @@ package com.mvvm.demo.api
 
 import com.common.BaseResult
 import com.common.LoginBeanData
+import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Query
 
@@ -23,7 +24,7 @@ interface UserApiService {
     suspend fun registered(
         @Query("username") username: String,
         @Query("password") password: String,
-        @Query("repassword") repassword: String
+        @Query("repassword") repassword: String,
     ): BaseResult<String>
 
 

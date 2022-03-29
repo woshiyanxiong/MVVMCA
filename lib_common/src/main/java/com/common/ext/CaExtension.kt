@@ -176,8 +176,6 @@ fun TextView.setColor(color: Int) {
  * @param imageView ImageView
  */
 fun String?.imageUrl(imageView: ImageView) {
-    val url = this
-
     try {
         Thread {
             //new出对象
