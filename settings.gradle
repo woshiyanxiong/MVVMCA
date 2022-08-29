@@ -161,3 +161,4 @@ include ':module_recommend'
 
 include ':lib_logcat'
 include ':lib_image'
+include ':module_compose'
