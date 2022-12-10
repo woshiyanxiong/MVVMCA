@@ -2,13 +2,11 @@ package com.mvvm.demo
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
-import androidx.lifecycle.lifecycleScope
-import com.common.base.BaseActivity
+import com.component.base.BaseActivity
 import com.mvvm.demo.databinding.ActivityMainBinding
 import com.mvvm.home.ui.HomeFragment
 import com.mvvm.mine.ui.MineFragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 /**
  * Created by yan_x

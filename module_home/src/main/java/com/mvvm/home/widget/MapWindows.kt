@@ -1,12 +1,11 @@
 package com.mvvm.home.widget
 
 import android.app.Activity
-import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.view.*
 import androidx.databinding.DataBindingUtil
-import com.common.ext.setBackgroundAlpha
-import com.common.widget.BasePupWindow
+import com.component.ext.setBackgroundAlpha
+import com.component.widget.BasePupWindow
 import com.mvvm.module_home.R
 import com.mvvm.module_home.databinding.LayoutPwMapBinding
 

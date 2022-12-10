@@ -1,8 +1,7 @@
 package com.mvvm.home.adapter
 
-import androidx.databinding.ObservableList
-import com.common.base.BaseDataBingViewHolder
-import com.common.base.BaseRecyclerViewAdapter
+import com.component.base.BaseDataBingViewHolder
+import com.component.base.BaseRecyclerViewAdapter
 import com.mvvm.home.bean.DataX
 import com.mvvm.module_home.databinding.ItemHomeBinding
 
@@ -12,20 +11,19 @@ import com.mvvm.module_home.databinding.ItemHomeBinding
  * @description
  */
 class HomeAdapter(
-    itemData: ObservableList<DataX>,
     layoutId: Int,
     brId: Int
-) : BaseRecyclerViewAdapter<DataX, ItemHomeBinding>(itemData, layoutId, brId) {
+) : BaseRecyclerViewAdapter<DataX, ItemHomeBinding>(layoutId, brId) {
     override fun bindViewHolder(
         viewHolder: BaseDataBingViewHolder<ItemHomeBinding>,
         position: Int,
-        t: DataX
+        t: DataX?
     ) {
         super.bindViewHolder(viewHolder, position, t)
         viewHolder.binding.apply {
-            tvName.text=t.chapterName
-            tvTitle.text=t.title
-            tvTime.text=t.superChapterName
+            tvName.text=t?.chapterName
+            tvTitle.text=t?.title
+            tvTime.text=t?.superChapterName
         }
     }
 }

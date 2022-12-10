@@ -1,8 +1,7 @@
 package com.mvvm.demo.api
 
-import com.common.BaseResult
-import com.common.LoginBeanData
-import retrofit2.http.Body
+import com.component.BaseResult
+import com.component.LoginBeanData
 import retrofit2.http.POST
 import retrofit2.http.Query
 

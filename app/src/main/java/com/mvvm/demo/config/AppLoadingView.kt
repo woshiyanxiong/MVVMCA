@@ -3,7 +3,7 @@ package com.mvvm.demo.config
 import android.util.Log
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import com.common.widget.port.LoadView
+import com.component.widget.port.LoadView
 import com.mvvm.demo.widget.LoadingDialog
 
 /**

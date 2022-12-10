@@ -1,7 +1,7 @@
 package com.mvvm.demo
 
-import com.common.CommonApp
-import com.common.helper.image.ImageLoadConfig
+import com.component.CommonApp
+import com.component.helper.image.ImageLoadConfig
 import com.mvvm.demo.config.ImageLoadGlide
 import com.mvvm.logcat.CrashHandler
 import dagger.hilt.android.HiltAndroidApp

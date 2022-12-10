@@ -1,6 +1,6 @@
 package com.mvvm.home.api
 
-import com.common.BaseResult
+import com.component.BaseResult
 import com.mvvm.home.bean.HomeResponse
 
 

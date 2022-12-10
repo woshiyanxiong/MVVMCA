@@ -13,7 +13,7 @@ import com.mvvm.demo.R
  * @date 2021/12/16/016 11:34
  * @description
  */
-class LoadingDialog(context: Context, style: Int = com.common.R.style.loadingDialog) : Dialog(context,style){
+class LoadingDialog(context: Context, style: Int = com.component.R.style.loadingDialog) : Dialog(context,style){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.dialog_app)

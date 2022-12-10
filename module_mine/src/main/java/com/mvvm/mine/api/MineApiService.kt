@@ -1,6 +1,6 @@
 package com.mvvm.mine.api
 
-import com.common.BaseResult
+import com.component.BaseResult
 import retrofit2.http.GET
 
 /**

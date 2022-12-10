@@ -3,12 +3,12 @@ package com.mvvm.demo
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.viewModels
-import com.common.base.BaseActivity
-import com.common.ext.initLoading
-import com.common.ext.navigationActivity
-import com.mvvm.demo.config.AppLoadingView
+import com.component.base.BaseActivity
+import com.component.ext.navigationActivity
+import com.component.uiStatus.IUiLoadStatus
 import com.mvvm.demo.databinding.ActivityLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 /**
@@ -23,16 +23,18 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>() {
 
     override fun getLayout(): Int = R.layout.activity_login
 
+    @Inject
+    lateinit var loadStatus: IUiLoadStatus
+
     override fun initView() {
-        initLoading(viewModel.stateView,AppLoadingView())
+        loadStatus.initUiStatus(this,viewModel.statusView)
         binding?.login?.setOnClickListener {
             viewModel.login(binding?.login?.text.toString(), binding?.pwd?.text.toString())
         }
-
         viewModel.loginSuccess.observe(this) {
             Handler(Looper.getMainLooper()).postDelayed({
                 navigationActivity(MainActivity::class.java)
-
+                finish()
             },2000)
 //            finish()
         }

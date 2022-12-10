@@ -2,7 +2,7 @@ package com.mvvm.home
 
 import android.app.Application
 import android.util.Log
-import com.common.base.AppLifecycleObserve
+import com.component.base.AppLifecycleObserve
 import com.google.auto.service.AutoService
 
 /**

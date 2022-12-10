@@ -1,8 +1,10 @@
 package com.mvvm.mine.ui
 
-import com.common.viewmodel.BaseViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mvvm.mine.repository.MineRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -11,12 +13,11 @@ import javax.inject.Inject
  * @description
  */
 @HiltViewModel
-class MineViewModel @Inject constructor(private val repository: MineRepository) : BaseViewModel() {
+class MineViewModel @Inject constructor(private val repository: MineRepository) : ViewModel() {
     fun getUserInfo() {
-        async({
+        viewModelScope.launch {
             repository.getUserInfo()
-        }, {
+        }
 
-        })
     }
 }

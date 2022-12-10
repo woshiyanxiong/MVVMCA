@@ -1,6 +1,6 @@
 package com.mvvm.demo
 
-import com.common.ext.getResponse
+import com.component.ext.getResponse
 import com.mvvm.demo.api.UserApiService
 import javax.inject.Inject
 

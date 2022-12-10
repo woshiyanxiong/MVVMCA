@@ -1,17 +1,11 @@
 package com.mvvm.mine.ui
 
-import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.viewModels
-import com.common.base.BaseFragment
-import com.common.helper.image.ImageLoadApp
+import com.component.base.BaseFragment
+import com.component.helper.image.ImageLoadApp
 import com.mvvm.home.HomePath
 import com.mvvm.home.api.MapNavigation
-import com.mvvm.logcat.LogUtils
-import com.mvvm.logcat.UploadLogFile
-import com.mvvm.logcat.utils.AESUtils
-import com.mvvm.logcat.utils.LogFileUtils
-import com.mvvm.logcat.utils.LogcatUtils
 
 import com.mvvm.mine.R
 import com.mvvm.mine.databinding.FragmentMineBinding

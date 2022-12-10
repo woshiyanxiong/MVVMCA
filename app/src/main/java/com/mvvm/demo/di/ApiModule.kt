@@ -1,7 +1,7 @@
 package com.mvvm.demo.di
 
-import com.common.network.Net
 import com.mvvm.demo.api.UserApiService
+import com.mvvm.net.network.Net
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

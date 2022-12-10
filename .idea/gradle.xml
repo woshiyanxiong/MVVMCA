@@ -12,10 +12,12 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/lib_base_package" />
-            <option value="$PROJECT_DIR$/lib_common" />
+            <option value="$PROJECT_DIR$/lib_component" />
             <option value="$PROJECT_DIR$/lib_image" />
             <option value="$PROJECT_DIR$/lib_language" />
             <option value="$PROJECT_DIR$/lib_logcat" />
+            <option value="$PROJECT_DIR$/lib_net" />
+            <option value="$PROJECT_DIR$/lib_storage" />
             <option value="$PROJECT_DIR$/module_compose" />
             <option value="$PROJECT_DIR$/module_home" />
             <option value="$PROJECT_DIR$/module_home_api" />
@@ -23,7 +25,6 @@
             <option value="$PROJECT_DIR$/module_recommend" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

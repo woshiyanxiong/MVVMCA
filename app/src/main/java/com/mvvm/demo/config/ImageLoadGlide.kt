@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import com.bumptech.glide.Glide
-import com.common.helper.image.ImageStrategy
+import com.component.helper.image.ImageStrategy
 
 /**
  * Created by yan_x

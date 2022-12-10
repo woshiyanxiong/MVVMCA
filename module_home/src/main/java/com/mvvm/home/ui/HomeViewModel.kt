@@ -1,19 +1,17 @@
 package com.mvvm.home.ui
 
-import android.util.Log
-import androidx.databinding.ObservableArrayList
-import androidx.databinding.ObservableList
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.common.ext.launch
-import com.common.result.data
-import com.common.result.handle
-import com.common.viewmodel.BaseViewModel
-import com.google.gson.Gson
+import com.component.ext.loadMap
+import com.component.ext.mapSuccess
+import com.component.result.data
+import com.component.uiStatus.IStatusView
 import com.mvvm.home.bean.DataX
 import com.mvvm.home.repository.HomeRepository
-import com.mvvm.logcat.LogUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,17 +21,21 @@ import javax.inject.Inject
  * @description
  */
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val repository: HomeRepository) : BaseViewModel() {
+class HomeViewModel @Inject constructor(
+    private val repository: HomeRepository,
+    val statusView: IStatusView
+) : ViewModel() {
 
-    var homeData: ObservableList<DataX> = ObservableArrayList()
+    private val _homeList = MutableLiveData<List<DataX>>()
+    val homeList:LiveData<List<DataX>> = _homeList
 
     fun getHomeInfoList() {
-        launch(
-            { repository.getHomeInfoList(0) }, {
-                it.data?.let { it1 -> homeData.addAll(it1.datas) }
-                Log.e("当前线程=", Thread.currentThread().name)
-            },
-            stateView
-        )
+        viewModelScope.launch {
+            repository.getHomeInfoList(0).loadMap {
+                statusView.addResource(it)
+            }.mapSuccess {
+                it.data?.let { it1 -> _homeList.value=it1.datas }
+            }
+        }
     }
 }

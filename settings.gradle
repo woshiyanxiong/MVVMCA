@@ -150,7 +150,7 @@ def fileReader(path, name,sdkName) {
 rootProject.name = "CA_demo"
 include ':app'
 include ':lib_base_package'
-include ':lib_common'
+include ':lib_component'
 include ':lib_language'
 
 //include ':module_home'
@@ -162,3 +162,5 @@ include ':module_recommend'
 include ':lib_logcat'
 include ':lib_image'
 include ':module_compose'
+include ':lib_storage'
+include ':lib_net'

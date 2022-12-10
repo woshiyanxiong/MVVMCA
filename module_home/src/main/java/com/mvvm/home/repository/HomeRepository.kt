@@ -1,7 +1,7 @@
 package com.mvvm.home.repository
 
 
-import com.common.ext.getResponse
+import com.component.ext.getResponse
 import com.mvvm.home.api.HomeApiService
 import javax.inject.Inject
 
