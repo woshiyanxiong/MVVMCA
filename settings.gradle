@@ -151,16 +151,16 @@ rootProject.name = "CA_demo"
 include ':app'
 include ':lib_base_package'
 include ':lib_component'
-include ':lib_language'
-
+include ':lib_logcat'
+include ':lib_storage'
+include ':lib_net'
+include ':lib_image'
 //include ':module_home'
 includeWithApi ':module_home'
 include ':module_mine'
 include ':module_recommend'
 //includeWithApi ':module_recommend'
 
-include ':lib_logcat'
-include ':lib_image'
+
 include ':module_compose'
-include ':lib_storage'
-include ':lib_net'
+

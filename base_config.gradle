@@ -68,10 +68,10 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':lib_component')
-    implementation project(':lib_language')
     implementation project(':lib_image')
+    implementation project(':lib_net')
     //room
-    implementation "androidx.room:room-common:2.2.6"
+    implementation "androidx.room:room-common:2.3.0"
     //router
     implementation 'com.alibaba:arouter-api:1.5.1'
     implementation "com.google.dagger:hilt-android:$hilt_version"
