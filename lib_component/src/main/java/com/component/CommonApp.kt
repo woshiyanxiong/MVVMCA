@@ -21,6 +21,9 @@ open class CommonApp : Application() {
      */
     private var activityCreated = 0
 
+
+    private var activityOnResume = 0
+
     /**
      * 获取各个模块
      */
@@ -29,7 +32,7 @@ open class CommonApp : Application() {
     private var activityLifecycleCallbacks: ActivityLifecycleCallbacks =
         object : ActivityLifecycleCallbacks {
             override fun onActivityPaused(p0: Activity) {
-
+                activityOnResume--
             }
 
             override fun onActivityStarted(p0: Activity) {
@@ -54,14 +57,10 @@ open class CommonApp : Application() {
             }
 
             override fun onActivityResumed(p0: Activity) {
-
+                activityOnResume++
             }
         }
 
-    /**
-     * 是否在后台
-     */
-    fun isBackground(): Boolean = activityAccount == 0
 
     override fun onCreate() {
         super.onCreate()
@@ -93,7 +92,15 @@ open class CommonApp : Application() {
         }
     }
 
-    open fun onDestroy(){
+    /**
+     * 是否处于后台运行
+     * @return Boolean
+     */
+    fun isBackgrounds(): Boolean {
+        return activityOnResume == 0
+    }
+
+    open fun onDestroy() {
 
     }
 

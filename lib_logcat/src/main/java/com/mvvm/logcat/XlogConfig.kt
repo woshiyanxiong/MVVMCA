@@ -34,9 +34,9 @@ import java.io.File
  */
 object XlogConfig {
     private var logPath = ""
-    fun init(context:Context) {
+    fun init(context: Context, name: String? = "xlog") {
         logPath = context.getExternalFilesDir(null)
-            ?.absolutePath + File.separator.toString() + "xlog"
+            ?.absolutePath + File.separator.toString() + "$name"
         Log.e("日志地址", logPath)
         val config = LogConfiguration.Builder()
             .logLevel(
