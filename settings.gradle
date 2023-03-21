@@ -7,7 +7,7 @@ dependencyResolutionManagement {
     }
 }
 
-def includeWithApi(String moduleName) {
+def includeWithApi(String moduleName,String parentFileName) {
     //先正常加载这个模块
     include(moduleName)
     //找到这个模块的路径
@@ -71,8 +71,10 @@ def includeWithApi(String moduleName) {
     // 重命名.api文件，生成正常的.java文件
     renameApiFiles(targetDir, '.kapi', '.kt')
 
+    String includeName=parentFileName.isEmpty()?":$sdkName":":$parentFileName:$sdkName"
+    println("加载的api文件：$sdkName，$targetDir,$originName,$includeName")
     //正常加载新的模块
-    include ":$sdkName"
+    include(includeName)
 }
 
 private void deleteEmptyDir(File dir) {
@@ -150,17 +152,13 @@ def fileReader(path, name,sdkName) {
 rootProject.name = "CA_demo"
 include ':app'
 include ':lib_base_package'
-include ':lib_component'
-include ':lib_logcat'
-include ':lib_storage'
-include ':lib_net'
-include ':lib_image'
-//include ':module_home'
-includeWithApi ':module_home'
-include ':module_mine'
-include ':module_recommend'
-//includeWithApi ':module_recommend'
-
-
-include ':module_compose'
-
+include ':core:common'
+include ':core:resource'
+include ':basecomponent:logcat'
+include ':basecomponent:net'
+include ':data:storage'
+include ':data:mine'
+includeWithApi ':feature:home',"feature"
+include ':feature:mine'
+include ':data:protocol'
+include ':data:home'

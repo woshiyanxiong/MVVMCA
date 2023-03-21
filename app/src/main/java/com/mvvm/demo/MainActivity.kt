@@ -2,6 +2,7 @@ package com.mvvm.demo
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
+import com.camine.repository.UserRepository
 import com.component.base.BaseActivity
 import com.mvvm.demo.databinding.ActivityMainBinding
 import com.mvvm.home.ui.HomeFragment

@@ -7,8 +7,8 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 30
+        minSdkVersion 23
+        targetSdkVersion 33
         versionCode 1
         versionName "2.7.9"
 
@@ -67,10 +67,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':lib_component')
-    implementation project(':lib_image')
-    implementation project(':lib_net')
-    implementation project(':lib_logcat')
     implementation "androidx.activity:activity-ktx:$activity_ktx"
     implementation "androidx.fragment:fragment-ktx:$fragment_ktx"
     //room

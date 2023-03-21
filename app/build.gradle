@@ -54,17 +54,21 @@ kapt {
     }
 }
 dependencies {
+    implementation "androidx.activity:activity-ktx:$activity_ktx"
+    implementation "androidx.fragment:fragment-ktx:$fragment_ktx"
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.5.0'
-    implementation project(':lib_component')
-    implementation project(':lib_image')
-    implementation project(':lib_storage')
-    implementation project(':lib_logcat')
-    implementation project(':lib_net')
-    implementation project(':module_home')
-    implementation project(':module_mine')
-    implementation project(path: ':module_home_api')
+//    implementation project(':lib_component')
+//    implementation project(':lib_image')
+    implementation project(':core:common')
+    implementation project(':data:mine')
+    implementation project(':basecomponent:logcat')
+    implementation project(':basecomponent:net')
+    implementation project(':data:storage')
+    implementation project(':feature:home')
+    implementation project(':feature:mine')
+//    implementation project(path: ':module_home_api')
     implementation project(path: ':lib_base_package')
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"

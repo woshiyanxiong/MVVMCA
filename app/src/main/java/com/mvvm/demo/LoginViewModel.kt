@@ -3,10 +3,10 @@ package com.mvvm.demo
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.component.LoginBeanData
 import com.component.ext.loadMap
 import com.component.ext.mapSuccess
-import com.component.result.data
+import com.camine.entity.LoginBeanData
+import com.camine.repository.UserRepository
 import com.component.uiStatus.IStatusView
 import com.mvvm.storage.LoginInfoUserCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,7 +38,7 @@ class LoginViewModel @Inject constructor(
     fun login(name: String, pwd: String) {
         viewModelScope.launch {
             repository.login(name, pwd).loadMap(statusView).mapSuccess {
-                _userInfo.value = it.data
+                _userInfo.value = it
                 _loginSuccess.value = true
             }
         }
