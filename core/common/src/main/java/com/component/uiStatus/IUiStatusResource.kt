@@ -10,5 +10,5 @@ import kotlinx.coroutines.flow.Flow
  */
 interface IUiStatusResource {
     fun loadingStatus(): Flow<Boolean>
-    fun errorStatus():Flow<com.ca.protocol.result.ReSource<com.ca.protocol.result.ReSource.Error>>
+    fun errorStatus():Flow<ReSource<ReSource.Error>>
 }
