@@ -162,3 +162,6 @@ includeWithApi ':feature:home',"feature"
 include ':feature:mine'
 include ':data:protocol'
 include ':data:home'
+include ':router_annotation'
+include ':router_processor'
+include ':router_compiler'

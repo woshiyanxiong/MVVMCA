@@ -64,7 +64,11 @@ android {
     }
 
 }
-
+kapt {
+    arguments {
+        arg("AROUTER_MODULE_NAME", project.getName())
+    }
+}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':core:common')
@@ -102,5 +106,7 @@ dependencies {
     implementation 'com.ethanhua:skeleton:1.1.2'
     implementation 'io.supercharge:shimmerlayout:2.1.0'
     implementation 'com.google.android:flexbox:2.0.1'
+    kapt project(':router_processor')
+    implementation project(':router_annotation')
 
 }
