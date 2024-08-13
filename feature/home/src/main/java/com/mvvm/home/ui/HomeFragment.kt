@@ -3,11 +3,12 @@ package com.mvvm.home.ui
 import android.util.Log
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.ca.feature.home.R
-import com.ca.feature.home.databinding.FragmentHomeBinding
+
 import com.component.base.BaseFragment
 import com.component.uiStatus.IUiLoadStatus
+import com.mvvm.home.R
 import com.mvvm.home.adapter.HomeAdapter
+import com.mvvm.home.databinding.FragmentHomeBinding
 
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

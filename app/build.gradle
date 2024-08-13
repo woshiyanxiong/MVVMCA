@@ -5,8 +5,9 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 apply plugin: 'dagger.hilt.android.plugin'
+apply from : "${project.rootDir}/lib_base_package/router.gradle"
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.mvvm.demo"
@@ -46,6 +47,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    packagingOptions {
+        exclude 'META-INF/gradle/incremental.annotation.processors'
+        exclude 'META-INF/library_release.kotlin_module'
+        exclude 'META-INF/*.kotlin_module'
+        exclude 'io/ktor/network/sockets/SocketTimeoutException.kotlin_metadata'
+    }
 
 }
 kapt {
@@ -54,10 +61,11 @@ kapt {
     }
 }
 dependencies {
-    implementation "androidx.activity:activity-ktx:$activity_ktx"
-    implementation "androidx.fragment:fragment-ktx:$fragment_ktx"
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation rootProject.ext.dependencies.activity_ktx
+    implementation rootProject.ext.dependencies.fragment_ktx
+    implementation rootProject.ext.dependencies.core_ktx
+    implementation rootProject.ext.dependencies.appcompat
+    implementation rootProject.ext.dependencies.glide
     implementation 'com.google.android.material:material:1.5.0'
 //    implementation project(':lib_component')
 //    implementation project(':lib_image')
@@ -69,6 +77,7 @@ dependencies {
     implementation project(':feature:home')
     implementation project(':feature:mine')
     implementation project(':router_annotation')
+    implementation project(':router_compiler')
 //    implementation project(':route_processor')
 //    implementation project(path: ':module_home_api')
     implementation project(path: ':lib_base_package')

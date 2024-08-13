@@ -4,10 +4,10 @@ import android.app.Activity
 import android.graphics.drawable.ColorDrawable
 import android.view.*
 import androidx.databinding.DataBindingUtil
-import com.ca.feature.home.R
-import com.ca.feature.home.databinding.LayoutPwMapBinding
 import com.component.ext.setBackgroundAlpha
 import com.component.widget.BasePupWindow
+import com.mvvm.home.R
+import com.mvvm.home.databinding.LayoutPwMapBinding
 
 
 /**

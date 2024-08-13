@@ -28,6 +28,7 @@
       <module name="CA_demo.data.protocol" target="11" />
       <module name="CA_demo.data.storage" target="11" />
       <module name="CA_demo.feature.home" target="11" />
+      <module name="CA_demo.feature.home.api" target="11" />
       <module name="CA_demo.feature.home_api" target="11" />
       <module name="CA_demo.feature.mine" target="11" />
       <module name="CA_demo.lib_base_package" target="11" />
@@ -35,6 +36,7 @@
       <module name="CA_demo.route_annotation.main" target="1.8" />
       <module name="CA_demo.route_annotation.test" target="1.8" />
       <module name="CA_demo.route_compiler" target="11" />
+      <module name="CA_demo.router_compiler" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

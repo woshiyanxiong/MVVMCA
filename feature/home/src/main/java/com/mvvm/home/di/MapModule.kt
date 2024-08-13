@@ -2,7 +2,7 @@ package com.mvvm.home.di
 
 
 
-import com.mvvm.home.api.MapNavigation
+import com.example.api.MapNavigation
 import com.mvvm.home.widget.MapBuilderImpl
 import dagger.Binds
 import dagger.Module

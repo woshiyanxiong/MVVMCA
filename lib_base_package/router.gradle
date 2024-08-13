@@ -1,0 +1,7 @@
+
+dependencies {
+    //router
+    kapt rootProject.ext.dependencies.arouterCompiler
+    implementation rootProject.ext.dependencies.arouterApi
+
+}

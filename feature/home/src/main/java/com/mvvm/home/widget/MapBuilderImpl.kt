@@ -3,7 +3,7 @@ package com.mvvm.home.widget
 import android.app.Activity
 import android.content.Context
 import android.view.View
-import com.mvvm.home.api.MapNavigation
+import com.example.api.MapNavigation
 
 
 import javax.inject.Inject

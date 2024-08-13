@@ -2,6 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
+
 android {
     compileSdkVersion 33
     buildToolsVersion "30.0.3"
@@ -62,6 +63,12 @@ android {
             java.srcDirs = ['src/main/java', 'src/main/kotlin']
         }
     }
+    // 第三方本地库引入所需
+    packagingOptions {
+        exclude 'META-INF/gradle/incremental.annotation.processors'
+        exclude 'META-INF/library_release.kotlin_module'
+    }
+
 
 }
 kapt {
@@ -76,30 +83,32 @@ dependencies {
     implementation project(':data:protocol')
     implementation project(':basecomponent:logcat')
     implementation 'com.github.mrmike:ok2curl:0.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation rootProject.ext.dependencies.appcompat
+    implementation rootProject.ext.dependencies.core_ktx
     implementation "com.google.code.gson:gson:2.9.0"
-    implementation "androidx.activity:activity-ktx:$activity_ktx"
-    implementation "androidx.fragment:fragment-ktx:$fragment_ktx"
+    implementation rootProject.ext.dependencies.activity_ktx
+    implementation rootProject.ext.dependencies.fragment_ktx
+    implementation rootProject.ext.dependencies.recyclerview
+    implementation rootProject.ext.dependencies.constraintlayout
     //room
     implementation "androidx.room:room-common:2.4.2"
     //router
-    implementation 'com.alibaba:arouter-api:1.5.2'
+    implementation rootProject.ext.dependencies.arouterApi
+    kapt rootProject.ext.dependencies.arouterCompiler
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
     kapt "org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0"
     kapt 'com.google.auto.service:auto-service:1.0-rc7'
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle"
-    implementation "androidx.lifecycle:lifecycle-common:$lifecycle"
-    kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle"
-    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle"
-    implementation "androidx.lifecycle:lifecycle-reactivestreams-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation rootProject.ext.dependencies.lifecycle_extensions
+    implementation rootProject.ext.dependencies.lifecycle_common
+    kapt rootProject.ext.dependencies.lifecycle_compiler
+    implementation rootProject.ext.dependencies.lifecycle_common_java8
+    implementation rootProject.ext.dependencies.lifecycle_reactivestreams_ktx
+    implementation rootProject.ext.dependencies.lifecycle_runtime_ktx
+    implementation rootProject.ext.dependencies.lifecycle_viewmodel_ktx
+    implementation rootProject.ext.dependencies.glide
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
-    implementation "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
     annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
     implementation 'com.google.auto.service:auto-service:1.0-rc7'
 //    骨架屏
@@ -108,5 +117,7 @@ dependencies {
     implementation 'com.google.android:flexbox:2.0.1'
     kapt project(':router_processor')
     implementation project(':router_annotation')
+    implementation project(':router_compiler')
+
 
 }

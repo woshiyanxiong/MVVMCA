@@ -5,7 +5,7 @@ plugins {
 apply from : "${project.rootDir}/base_config.gradle"
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 23

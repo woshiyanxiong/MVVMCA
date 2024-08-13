@@ -1,8 +1,10 @@
 package com.mvvm.home.ui
 
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.ca.router_annotation.OldRoute
+import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * 类的作用的简要阐述
@@ -12,7 +14,11 @@ import com.ca.router_annotation.OldRoute
  *
  * @author yanxiong
  */
-@Route(path = "/home/details")
-@OldRoute(path = "/home/details/old")
+@OldRoute(path = "/feature/home/details/old")
+@Route(path = "/feature/home/details")
+@AndroidEntryPoint
 class DetailsActivity:AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
 }

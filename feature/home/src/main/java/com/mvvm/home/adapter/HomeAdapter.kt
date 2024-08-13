@@ -1,9 +1,13 @@
 package com.mvvm.home.adapter
 
-import com.ca.feature.home.databinding.ItemHomeBinding
+import android.content.Intent
+import com.alibaba.android.arouter.launcher.ARouter
 import com.ca.home.entity.DataX
+import com.ca.router_compiler.CARouterApi
 import com.component.base.BaseDataBingViewHolder
 import com.component.base.BaseRecyclerViewAdapter
+import com.mvvm.home.databinding.ItemHomeBinding
+import com.mvvm.home.ui.DetailsActivity
 
 
 /**
@@ -25,6 +29,11 @@ class HomeAdapter(
             tvName.text=t?.chapterName
             tvTitle.text=t?.title
             tvTime.text=t?.superChapterName
+            root.setOnClickListener {
+//                root.context.startActivity(Intent(root.context,DetailsActivity::class.java))
+//                ARouter.getInstance().build("/feature/home/details").navigation(root.context)
+                CARouterApi.getInstance().navigation("/feature/home/details/old")
+            }
         }
     }
 }

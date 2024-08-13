@@ -4,8 +4,8 @@ import android.widget.Toast
 import androidx.fragment.app.viewModels
 import com.component.base.BaseFragment
 import com.component.helper.image.ImageLoadApp
-import com.mvvm.home.HomePath
-import com.mvvm.home.api.MapNavigation
+import com.example.api.MapNavigation
+
 
 import com.mvvm.mine.R
 import com.mvvm.mine.databinding.FragmentMineBinding
@@ -20,8 +20,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MineFragment : BaseFragment<FragmentMineBinding>() {
 
-    @Inject
-    lateinit var mapWindows: MapNavigation
+//    @Inject
+//    lateinit var mapWindows: MapNavigation
 
     override fun getLayout(): Int = R.layout.fragment_mine
 
@@ -30,13 +30,12 @@ class MineFragment : BaseFragment<FragmentMineBinding>() {
     private val viewModel: MineViewModel by viewModels()
 
     override fun initView() {
-        HomePath.HOME_DETAILS
-        mapWindows.createMap(requireActivity()) {
-            Toast.makeText(requireContext(), "$it", Toast.LENGTH_SHORT).show()
-        }
-        binding.show.setOnClickListener {
-            mapWindows.show(binding.root)
-        }
+//        mapWindows.createMap(requireActivity()) {
+//            Toast.makeText(requireContext(), "$it", Toast.LENGTH_SHORT).show()
+//        }
+//        binding.show.setOnClickListener {
+//            mapWindows.show(binding.root)
+//        }
         ImageLoadApp.loadImage(binding.image,imageUrl)
         getLog()
     }
@@ -51,6 +50,5 @@ class MineFragment : BaseFragment<FragmentMineBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mapWindows.dismiss()
     }
 }

@@ -1,5 +1,6 @@
 package com.mvvm.demo
 
+import com.ca.router_compiler.CARouterApi
 import com.component.CommonApp
 import com.component.helper.image.ImageLoadConfig
 import com.mvvm.demo.config.ImageLoadGlide
@@ -21,5 +22,6 @@ class App : CommonApp() {
         XlogConfig.init(this)
         //图片加载引擎
         ImageLoadConfig.init(ImageLoadGlide())
+        CARouterApi.init(this)
     }
 }
