@@ -30,8 +30,6 @@ class HomeAdapter(
             tvTitle.text=t?.title
             tvTime.text=t?.superChapterName
             root.setOnClickListener {
-//                root.context.startActivity(Intent(root.context,DetailsActivity::class.java))
-//                ARouter.getInstance().build("/feature/home/details").navigation(root.context)
                 CARouterApi.getInstance().navigation("/feature/home/details/old")
             }
         }
