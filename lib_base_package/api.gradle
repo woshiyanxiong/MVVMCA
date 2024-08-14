@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
+apply from : "${project.rootDir}/lib_base_package/router.gradle"
 android {
     compileSdkVersion 33
     buildToolsVersion "30.0.3"
@@ -61,7 +62,4 @@ dependencies {
 
     //room
     implementation "androidx.room:room-common:2.2.6"
-
-    //router
-    implementation 'com.alibaba:arouter-api:1.5.1'
 }
