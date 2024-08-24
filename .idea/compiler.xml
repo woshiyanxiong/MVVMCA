@@ -37,6 +37,9 @@
       <module name="CA_demo.route_annotation.test" target="1.8" />
       <module name="CA_demo.route_compiler" target="11" />
       <module name="CA_demo.router_compiler" target="11" />
+      <module name="CA_demo.router_gradle_plugin" target="1.8" />
+      <module name="CA_demo.router_gradle_plugin.main" target="1.8" />
+      <module name="CA_demo.router_gradle_plugin.test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

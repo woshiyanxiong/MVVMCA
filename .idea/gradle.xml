@@ -30,6 +30,7 @@
             <option value="$PROJECT_DIR$/lib_base_package" />
             <option value="$PROJECT_DIR$/router_annotation" />
             <option value="$PROJECT_DIR$/router_compiler" />
+            <option value="$PROJECT_DIR$/router_gradle_plugin" />
             <option value="$PROJECT_DIR$/router_processor" />
           </set>
         </option>

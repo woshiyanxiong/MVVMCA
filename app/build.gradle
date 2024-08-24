@@ -6,6 +6,7 @@ plugins {
 }
 apply plugin: 'dagger.hilt.android.plugin'
 apply from : "${project.rootDir}/lib_base_package/router.gradle"
+apply plugin: 'com.ca.router_gradle_plugin'
 android {
     compileSdk 33
 

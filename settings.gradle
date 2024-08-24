@@ -1,11 +1,28 @@
+
+pluginManagement {
+    repositories {
+        mavenCentral()
+        maven {
+            url = uri('./router_gradle_plugin') // Replace with the path to your Maven repository
+            name = 'MavenRepo'
+        }
+    }
+}
+
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
+        maven {
+            url = uri('./router_gradle_plugin')
+        }
         jcenter() // Warning: this repository is going to shut down soon
     }
 }
+
+
 
 def includeWithApi(String moduleName,String parentFileName) {
     //先正常加载这个模块
@@ -166,3 +183,4 @@ include ':router_annotation'
 include ':router_processor'
 include ':router_compiler'
 include ':feature:home:api'
+include ':router_gradle_plugin'

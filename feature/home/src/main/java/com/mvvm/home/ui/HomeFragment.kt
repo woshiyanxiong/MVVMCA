@@ -35,6 +35,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     override fun initView() {
         binding.recycleView.layoutManager = LinearLayoutManager(requireContext())
         binding.recycleView.adapter = adapter
+        binding.recycleView.itemAnimator
         loadStatus.initUiStatus(this,viewModel.statusView)
         initObserve()
     }
