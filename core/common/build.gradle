@@ -7,7 +7,7 @@ plugins {
 
 android {
     compileSdk 31
-
+    namespace 'com.component'
     defaultConfig {
         minSdk 23
         targetSdk 31

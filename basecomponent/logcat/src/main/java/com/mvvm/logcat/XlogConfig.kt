@@ -3,6 +3,7 @@ package com.mvvm.logcat
 import android.content.Context
 import android.os.PatternMatcher
 import android.util.Log
+import com.elvishew.xlog.BuildConfig
 import com.elvishew.xlog.XLog
 
 import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy

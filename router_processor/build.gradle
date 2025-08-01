@@ -13,7 +13,7 @@ dependencies {
 
     // JavaPoet
     implementation 'com.squareup:javapoet:1.9.0'
-    implementation ("com.alibaba:arouter-api:1.5.2")
+    implementation rootProject.ext.dependencies.arouterApi
     // 工具类
     implementation 'org.apache.commons:commons-lang3:3.5'
     implementation 'org.apache.commons:commons-collections4:4.1'

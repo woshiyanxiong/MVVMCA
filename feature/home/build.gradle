@@ -1,16 +1,12 @@
-
 apply {
     from("${project.rootDir}/feature.gradle")
 }
-kapt {
-    arguments {
-        arg("AROUTER_MODULE_NAME", project.getName())
-    }
+android {
+    namespace 'com.mvvm.home'
 }
 
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-script-runtime:1.5.20"
     implementation project(':data:home')
     implementation project(':feature:home:api')
 }

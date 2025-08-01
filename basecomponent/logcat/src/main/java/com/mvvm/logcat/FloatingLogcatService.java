@@ -74,7 +74,7 @@ public class FloatingLogcatService extends Service implements View.OnClickListen
             return super.onStartCommand(intent, flags, startId);
         }
 
-        ContextThemeWrapper context = new ContextThemeWrapper(this, R.style.Theme_AppCompat_NoActionBar);
+        ContextThemeWrapper context = new ContextThemeWrapper(this, androidx.appcompat.R.style.Theme_AppCompat_NoActionBar);
         mRoot = View.inflate(context, R.layout.service_floating_logcat, null);
         mLlTop = mRoot.findViewById(R.id.llTop);
         mSpinner = mRoot.findViewById(R.id.spinner);

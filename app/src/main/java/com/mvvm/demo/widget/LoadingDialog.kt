@@ -23,6 +23,6 @@ class LoadingDialog(context: Context, style: Int = com.component.R.style.loading
         lp?.width = WindowManager.LayoutParams.WRAP_CONTENT
         lp?.height = WindowManager.LayoutParams.WRAP_CONTENT
         getWindow()?.attributes = lp
-        window?.setBackgroundDrawableResource(R.color.transparent)
+        window?.setBackgroundDrawableResource(com.component.R.color.transparent)
     }
 }

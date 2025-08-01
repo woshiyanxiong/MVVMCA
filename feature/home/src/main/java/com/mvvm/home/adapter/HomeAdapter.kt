@@ -30,7 +30,7 @@ class HomeAdapter(
             tvTitle.text=t?.title
             tvTime.text=t?.superChapterName
             root.setOnClickListener {
-                CARouterApi.getInstance().navigation("/feature/home/details/old")
+                CARouterApi.getInstance().navigation("/feature/compose/main")
             }
         }
     }

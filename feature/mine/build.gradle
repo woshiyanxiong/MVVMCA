@@ -1,6 +1,8 @@
 
 apply from : "${project.rootDir}/feature.gradle"
-
+android{
+    namespace 'com.mvvm.mine'
+}
 
 dependencies {
     implementation project(':data:mine')

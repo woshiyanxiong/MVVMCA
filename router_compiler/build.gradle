@@ -25,11 +25,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-kapt {
-    arguments {
-        arg("AROUTER_MODULE_NAME", project.getName())
-    }
-}
+
 
 dependencies {
     implementation project(':router_processor')
@@ -38,5 +34,5 @@ dependencies {
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
     kapt ("com.alibaba:arouter-compiler:1.5.2")
-    implementation ("com.alibaba:arouter-api:1.5.2")
+    implementation rootProject.ext.dependencies.arouterApi
 }

@@ -1,6 +1,6 @@
 package com.mvvm.net.network
 
-import com.mvvm.logcat.BuildConfig
+import com.mvvm.net.BuildConfig
 import okhttp3.Interceptor
 import java.util.concurrent.TimeUnit
 

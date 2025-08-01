@@ -2,6 +2,7 @@ package com.mvvm.logcat
 
 import android.content.Context
 import android.util.Log
+import com.dianping.logan.BuildConfig
 import com.dianping.logan.Logan
 import com.dianping.logan.LoganConfig
 import com.elvishew.xlog.XLog
