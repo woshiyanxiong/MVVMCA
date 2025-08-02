@@ -8,7 +8,7 @@ apply plugin: 'dagger.hilt.android.plugin'
 apply from : "${project.rootDir}/lib_base_package/router.gradle"
 //apply plugin: 'com.ca.router_gradle_plugin'
 android {
-    compileSdk 34
+    compileSdk 35
     namespace 'com.mvvm.demo' // 添加这行
     defaultConfig {
         applicationId "com.mvvm.demo"
@@ -77,7 +77,7 @@ dependencies {
     implementation project(':data:storage')
     implementation project(':feature:home')
     implementation project(':feature:mine')
-//    implementation project(':feature:compose')
+    implementation project(':feature:compose')
     implementation project(':router_annotation')
     implementation project(':router_compiler')
 //    implementation project(':route_processor')

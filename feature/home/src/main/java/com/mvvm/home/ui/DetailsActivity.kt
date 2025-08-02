@@ -14,8 +14,8 @@ import dagger.hilt.android.AndroidEntryPoint
  *
  * @author yanxiong
  */
-@OldRoute(path = "/feature/home/details/old")
-@Route(path = "/feature/home/details")
+@OldRoute(path = "/home/details/old")
+@Route(path = "/home/details")
 @AndroidEntryPoint
 class DetailsActivity:AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

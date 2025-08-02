@@ -12,6 +12,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
     }
 
     buildTypes {
@@ -25,7 +26,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
+kapt {
+    arguments {
+        arg("AROUTER_MODULE_NAME", project.getName())
+    }
+}
 
 dependencies {
     implementation project(':router_processor')
