@@ -2,6 +2,7 @@ package com.mvvm.home.ui
 
 import android.util.Log
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.component.base.BaseFragment
@@ -33,7 +34,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     override fun getLayout(): Int = R.layout.fragment_home
 
     override fun initView() {
-        binding.recycleView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recycleView.layoutManager = GridLayoutManager(requireContext(),2)
         binding.recycleView.adapter = adapter
         binding.recycleView.itemAnimator
         loadStatus.initUiStatus(this,viewModel.statusView)
