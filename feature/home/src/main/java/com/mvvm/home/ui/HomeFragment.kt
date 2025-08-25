@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 
 import com.component.base.BaseFragment
 import com.component.uiStatus.IUiLoadStatus
@@ -34,7 +35,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     override fun getLayout(): Int = R.layout.fragment_home
 
     override fun initView() {
-        binding.recycleView.layoutManager = GridLayoutManager(requireContext(),2)
+        binding.recycleView.layoutManager = StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL)
         binding.recycleView.adapter = adapter
         binding.recycleView.itemAnimator
         loadStatus.initUiStatus(this,viewModel.statusView)

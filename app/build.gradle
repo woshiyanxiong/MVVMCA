@@ -53,6 +53,21 @@ android {
         exclude 'META-INF/library_release.kotlin_module'
         exclude 'META-INF/*.kotlin_module'
         exclude 'io/ktor/network/sockets/SocketTimeoutException.kotlin_metadata'
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/versions/9/module-info.class'
+        exclude 'META-INF/FastDoubleParser-LICENSE'
+        exclude 'META-INF/FastDoubleParser-NOTICE'
+        exclude 'META-INF/DISCLAIMER'
+        exclude 'META-INF/io.netty.versions.properties'
+        exclude 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
     }
 
 }

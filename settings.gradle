@@ -1,9 +1,14 @@
 
 pluginManagement {
     repositories {
+        maven { url = 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/central' }
+        gradlePluginPortal()
+        google()
         mavenCentral()
         maven {
-            url = uri('./router_gradle_plugin') // Replace with the path to your Maven repository
+            url = uri('./router_gradle_plugin')
             name = 'MavenRepo'
         }
     }
@@ -12,19 +17,16 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/central' }
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+        maven { url = 'https://maven.aliyun.com/repository/jcenter' }
+        mavenLocal()
         google()
         mavenCentral()
-        mavenLocal()
         maven {
             url = uri('./router_gradle_plugin')
         }
-        maven{
-            url = "https://maven.aliyun.com/repository/public"
-        }
-        maven { url = 'https://maven.aliyun.com/repository/google' }
-        maven { url= 'https://maven.aliyun.com/repository/central' }
-        maven { url= 'https://maven.aliyun.com/repository/gradle-plugin' }
-        maven { url= 'https://maven.aliyun.com/repository/jcenter' }
     }
 }
 
@@ -191,3 +193,4 @@ include ':router_processor'
 include ':router_compiler'
 include ':feature:home:api'
 include ':router_gradle_plugin'
+include ':data:wallet'

@@ -2,6 +2,8 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.compose'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
 
@@ -38,4 +40,13 @@ dependencies {
     implementation libs.androidx.ui.graphics
     implementation libs.androidx.ui.tooling.preview
     implementation libs.androidx.material3
+    debugImplementation libs.androidx.ui.tooling
+    debugImplementation libs.androidx.ui.test.manifest
+    
+    // ViewModel Compose
+    implementation libs.androidx.lifecycle.viewmodel.compose
+    implementation libs.androidx.hilt.navigation.compose
+    
+    // Wallet module
+    implementation project(':data:wallet')
 }

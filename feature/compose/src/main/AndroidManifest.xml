@@ -7,5 +7,10 @@
         <activity
             android:name=".ComPoseActivity"
             tools:ignore="WrongManifestParent" />
+        <activity android:name=".CreateWalletActivity"/>
+        <activity android:name=".MnemonicBackupActivity"/>
+        <activity android:name=".MnemonicVerifyActivity"/>
+        <activity android:name=".WalletMainActivity"/>
+        <activity android:name=".WalletCreatedSuccessActivity"/>
     </application>
 </manifest>

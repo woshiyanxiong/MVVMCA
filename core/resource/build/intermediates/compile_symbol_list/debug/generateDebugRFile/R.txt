@@ -1,0 +1,4 @@
+int drawable ic_baseline_home_24 0x0
+int drawable ic_baseline_home_select_24 0x0
+int drawable ic_baseline_supervised_user_circle_24 0x0
+int drawable ic_baseline_supervised_user_circle_select_24_24 0x0
