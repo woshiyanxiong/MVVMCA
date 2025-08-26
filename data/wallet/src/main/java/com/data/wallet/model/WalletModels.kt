@@ -21,18 +21,6 @@ data class Token(
     val price: BigDecimal? = null
 )
 
-// 交易记录
-data class Transaction(
-    val hash: String,
-    val from: String,
-    val to: String,
-    val value: BigDecimal,
-    val gasUsed: BigInteger,
-    val gasPrice: BigInteger,
-    val timestamp: Long,
-    val status: TransactionStatus,
-    val tokenSymbol: String = "ETH"
-)
 
 enum class TransactionStatus {
     PENDING, SUCCESS, FAILED

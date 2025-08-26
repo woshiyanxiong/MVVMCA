@@ -3,6 +3,7 @@ package com.data.wallet.repo
 import com.data.wallet.model.Wallet
 import com.data.wallet.model.CreateWalletRequest
 import com.data.wallet.model.ImportWalletRequest
+import com.data.wallet.model.TransactionModel
 import org.web3j.crypto.Credentials
 import kotlinx.coroutines.flow.Flow
 import java.math.BigInteger
@@ -27,4 +28,6 @@ interface IWalletRepository {
     
     // 生成助记词
     fun generateMnemonic(): Flow<List<String>>
+
+    fun getTransactions(address: String, limit: Int = 10): Flow<List<TransactionModel>>
 }

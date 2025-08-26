@@ -33,7 +33,7 @@ class HomeAdapter(
             tvTime.text=t?.niceShareDate
             icon.setImageResource(image[(Math.random() * 6).toInt()])
             root.setOnClickListener {
-                CARouterApi.getInstance().navigation("/compose/main")
+                CARouterApi.getInstance().navigation("/compose/splash")
             }
         }
     }

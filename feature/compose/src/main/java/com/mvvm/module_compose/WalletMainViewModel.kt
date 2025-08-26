@@ -3,6 +3,7 @@ package com.mvvm.module_compose
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.data.wallet.model.TransactionModel
 import com.data.wallet.repo.IWalletRepository
 import com.mvvm.logcat.LogUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,7 @@ data class WalletMainState(
     val ethBalance: String = "0.0",
     val ethValue: String = "$0.00",
     val walletList: List<String> = emptyList(),
+    val transactions: List<TransactionModel> = emptyList(),
     val error: String? = null
 )
 
@@ -50,12 +52,16 @@ class WalletMainViewModel @Inject constructor(
                     val ethPrice = 2000.0 // 假设ETH价格
                     val ethValue = String.format("$%.2f", ethBalance.toDouble() * ethPrice)
                     
+//                    // 获取交易记录
+//                    val transactions = walletRepository
+//                        .getTransactions(currentAddress, 5).firstOrNull() ?: emptyList()
+                    
                     _state.value = _state.value.copy(
                         isLoading = false,
                         walletAddress = formatAddress(currentAddress),
                         ethBalance = String.format("%.4f", ethBalance),
                         ethValue = ethValue,
-                        walletList = walletList
+                        walletList = walletList,
                     )
                 } else {
                     _state.value = _state.value.copy(

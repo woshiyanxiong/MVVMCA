@@ -244,13 +244,28 @@ fun WalletMainScreen(
                             ) {
                                 CircularProgressIndicator()
                             }
-                        } else {
+                        } else if (state.transactions.isEmpty()) {
                             Text(
                                 text = "暂无交易记录",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth().padding(16.dp)
                             )
+                        } else {
+                            state.transactions.forEach { transaction ->
+                                TransactionItem(
+                                    transaction = Transaction(
+                                        type = if (transaction.to.equals(state.walletAddress, true)) "receive" else "send",
+                                        amount = convertWeiToEth(transaction.value),
+                                        symbol = "ETH",
+                                        address = if (transaction.to.equals(state.walletAddress, true)) transaction.from else transaction.to,
+                                        time = formatTime(transaction.timestamp)
+                                    )
+                                )
+                                if (transaction != state.transactions.last()) {
+                                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                                }
+                            }
                         }
                     }
                 }
@@ -414,6 +429,28 @@ fun TransactionItem(transaction: Transaction) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+// 辅助函数
+fun convertWeiToEth(wei: String): String {
+    return try {
+        val weiValue = java.math.BigInteger(wei)
+        val ethValue = java.math.BigDecimal(weiValue).divide(java.math.BigDecimal("1000000000000000000"))
+        String.format("%.6f", ethValue)
+    } catch (e: Exception) {
+        "0.000000"
+    }
+}
+
+fun formatTime(timestamp: Long): String {
+    val now = System.currentTimeMillis()
+    val diff = now - timestamp
+    return when {
+        diff < 60000 -> "刚刚"
+        diff < 3600000 -> "${diff / 60000}分钟前"
+        diff < 86400000 -> "${diff / 3600000}小时前"
+        else -> "${diff / 86400000}天前"
     }
 }
 

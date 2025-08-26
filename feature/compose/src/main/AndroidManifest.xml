@@ -12,5 +12,7 @@
         <activity android:name=".MnemonicVerifyActivity"/>
         <activity android:name=".WalletMainActivity"/>
         <activity android:name=".WalletCreatedSuccessActivity"/>
+        <activity android:name=".splash.WalletSplashActivity"/>
+
     </application>
 </manifest>
