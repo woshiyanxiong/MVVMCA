@@ -1,22 +1,21 @@
 package com.mvvm.module_compose
 
-import android.annotation.SuppressLint
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.component.ext.signalFlow
 import com.data.wallet.model.TransactionModel
 import com.data.wallet.repo.IWalletRepository
-import com.google.gson.Gson
-import com.mvvm.logcat.LogUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.util.Locale
+import javax.inject.Inject
 
 data class WalletMainState(
     val isLoading: Boolean = false,
@@ -32,62 +31,35 @@ data class WalletMainState(
 class WalletMainViewModel @Inject constructor(
     private val walletRepository: IWalletRepository
 ) : ViewModel() {
-    private val _state = MutableStateFlow(WalletMainState())
-    val state: StateFlow<WalletMainState> = _state
+    private val _getInfo = signalFlow<Boolean>()
+    val state: StateFlow<WalletMainState> = _getInfo.flatMapLatest {
+        walletRepository.getMainWalletInfo()
+    }.mapNotNull { entity ->
+        val ethBalance = convertWeiToEth(entity?.balance)
+        WalletMainState(
+            isLoading = false,
+            walletAddress = formatAddress(entity?.currentAddress),
+            ethBalance = String.format(Locale.US, "%.4f", ethBalance),
+            ethValue = entity?.ethValue ?: "$0.00",
+            walletList = entity?.walletList ?: emptyList(),
+            transactions = entity?.transaction ?: emptyList()
+        )
+    }.onStart {
+        WalletMainState(isLoading = true, error = null)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, WalletMainState())
+
 
     fun loadWalletData() {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true, error = null)
-            
-            try {
-                // 获取钱包列表
-                val walletList = walletRepository.getWalletList().first()
-                
-                if (walletList.isNotEmpty()) {
-                    val currentAddress = walletList.first()
-                    LogUtils.e("当前地址: $currentAddress")
-                    // 获取ETH余额
-                    val balance = walletRepository.getBalance(currentAddress).firstOrNull()?: BigInteger("0")
-                    val ethBalance = convertWeiToEth(balance)
-                    
-                    // 简化的价格计算（实际应该调用价格API）
-                    val ethPrice = 2000.0 // 假设ETH价格
-                    val ethValue = String.format("$%.2f", ethBalance.toDouble() * ethPrice)
-                    
-                    // 获取交易记录
-                    val transactions = walletRepository
-                        .getTransactions(currentAddress, 5).firstOrNull() ?: emptyList()
-                    Log.e("交易记录",Gson().toJson(transactions))
-                    
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        walletAddress = formatAddress(currentAddress),
-                        ethBalance = String.format("%.4f", ethBalance),
-                        ethValue = ethValue,
-                        walletList = walletList,
-                        transactions = transactions
-                    )
-                } else {
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        error = "未找到钱包"
-                    )
-                }
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = "加载钱包数据失败: ${e.message}"
-                )
-            }
-        }
+        _getInfo.tryEmit(true)
     }
-    
-    private fun convertWeiToEth(wei: BigInteger): BigDecimal {
+
+    private fun convertWeiToEth(wei: BigInteger?): BigDecimal {
         val weiInEth = BigDecimal("1000000000000000000") // 10^18
         return BigDecimal(wei).divide(weiInEth)
     }
-    
-    private fun formatAddress(address: String): String {
+
+    private fun formatAddress(address: String?): String {
+        if (address.isNullOrEmpty()) return ""
         return if (address.length > 10) {
             "${address.substring(0, 6)}...${address.substring(address.length - 4)}"
         } else {

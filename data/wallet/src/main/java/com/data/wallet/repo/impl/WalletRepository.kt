@@ -36,19 +36,23 @@ import kotlinx.coroutines.flow.flowOn
 import com.data.wallet.api.NodeRealApi
 import com.data.wallet.api.NodeRealRequest
 import com.data.wallet.api.TransactionParams
+import com.data.wallet.api.CoinGeckoApi
+import com.data.wallet.entity.MainWalletInfoEntity
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.OkHttpClient
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 internal class WalletRepository @Inject constructor(
     private val walletStore: WalletStore,
     private val apiService: NodeRealApi,
+    private val coinGeckoApi: CoinGeckoApi,
 ) : IWalletRepository {
     private val noteKey = "54f700c58aeb4d2fb2620b817759894e"
     private val ETH_API_KEY = "N5SG14C1TXZN7917ECQY6KUFW7BEF7M1J3"
 
-    private val nodeUrl = "https://eth-mainnet.nodereal.io/v1/54f700c58aeb4d2fb2620b817759894e"
+    private val nodeUrl = "https://eth-mainnet.nodereal.io/v1/${noteKey}"
     private val infuraURL = "https://mainnet.infura.io/v3/1659dfb40aa24bbb8153a677b98064d7"
 
     // 创建Web3j实例
@@ -109,6 +113,33 @@ internal class WalletRepository @Inject constructor(
     // 验证地址格式
     fun isValidAddress(address: String): Boolean {
         return WalletUtils.isValidAddress(address)
+    }
+
+    override fun getMainWalletInfo(): Flow<MainWalletInfoEntity?> {
+        return flow {
+            val walletList = getWalletList().firstOrNull()
+            if (walletList?.isNotEmpty() == true) {
+                val currentAddress = walletList.firstOrNull() ?: ""
+                LogUtils.e("当前地址: $currentAddress")
+                // 获取ETH余额
+                val balance = getBalance(currentAddress).firstOrNull() ?: BigInteger("0")
+                val transactions = getTransactions(currentAddress, 5).firstOrNull() ?: emptyList()
+                val ethPrice = getEthPrice().firstOrNull() ?: 0.0
+                val ethValue = String.format(Locale.US,"$%.2f", (balance.toDouble() * ethPrice))
+                return@flow emit(
+                    MainWalletInfoEntity(
+                        currentAddress = currentAddress,
+                        walletList = walletList,
+                        balance = balance,
+                        ethValue = ethValue,
+                        transaction = transactions
+                    )
+                )
+            }
+            emit(null)
+        }.catch {
+            emit(null)
+        }.flowOn(Dispatchers.IO)
     }
 
     override fun createWallet(request: CreateWalletRequest): Flow<CreateWalletResult?> = flow {
@@ -203,7 +234,7 @@ internal class WalletRepository @Inject constructor(
                 )
             )
         )
-        
+
         val response = apiService.getTransactions(
             url = nodeUrl,
             request = request
@@ -226,6 +257,15 @@ internal class WalletRepository @Inject constructor(
         it.printStackTrace()
         LogUtils.e("获取交易记录失败: ${it.message}")
         emit(emptyList())
+    }.flowOn(Dispatchers.IO)
+
+    // 获取ETH价格
+    override fun getEthPrice(): Flow<Double?> = flow {
+        val response = coinGeckoApi.getPrice()
+        emit(response.ethereum.usd)
+    }.catch {
+        LogUtils.e("获取ETH价格失败: ${it.message}")
+        emit(0.0)
     }.flowOn(Dispatchers.IO)
 
     override fun generateMnemonic(): Flow<List<String>> = flow {

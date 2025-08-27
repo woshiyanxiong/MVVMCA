@@ -1,5 +1,6 @@
 package com.data.wallet.repo
 
+import com.data.wallet.entity.MainWalletInfoEntity
 import com.data.wallet.model.Wallet
 import com.data.wallet.model.CreateWalletRequest
 import com.data.wallet.model.ImportWalletRequest
@@ -16,6 +17,11 @@ data class CreateWalletResult(
 
 interface IWalletRepository {
     fun getWalletList(): Flow<List<String>>
+
+    /**
+     * 获取当前信息
+     */
+    fun getMainWalletInfo():Flow<MainWalletInfoEntity?>
     
     // 创建新钱包
     fun createWallet(request: CreateWalletRequest): Flow<CreateWalletResult?>
@@ -30,4 +36,7 @@ interface IWalletRepository {
     fun generateMnemonic(): Flow<List<String>>
 
     fun getTransactions(address: String, limit: Int = 10): Flow<List<TransactionModel>>
+    
+    // 获取ETH价格
+    fun getEthPrice(): Flow<Double?>
 }
