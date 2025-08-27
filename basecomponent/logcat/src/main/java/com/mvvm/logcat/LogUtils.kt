@@ -35,7 +35,7 @@ object LogUtils {
     }
 
     fun e(msg: String) {
-        XLog.e(msg)
+       Log.e("error", msg)
     }
 
     fun v(tag: String, msg: String) {

@@ -58,7 +58,7 @@ public class HttpLogInterceptor implements Interceptor {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    buffer.append("\n 返回结果------\n");
+                    buffer.append("\n 返回结果 ------\n"+resp.toString());
                     logLong(buffer.toString());
                     LogUtils.INSTANCE.netGson(TAG,resp.toString(),"");
                     body = ResponseBody.create(mediaType, resp);

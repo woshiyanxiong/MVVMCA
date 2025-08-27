@@ -33,14 +33,21 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
+import com.data.wallet.api.NodeRealApi
+import com.data.wallet.api.NodeRealRequest
+import com.data.wallet.api.TransactionParams
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 internal class WalletRepository @Inject constructor(
-    private val walletStore: WalletStore
+    private val walletStore: WalletStore,
+    private val apiService: NodeRealApi,
 ) : IWalletRepository {
     private val noteKey = "54f700c58aeb4d2fb2620b817759894e"
     private val ETH_API_KEY = "N5SG14C1TXZN7917ECQY6KUFW7BEF7M1J3"
 
-    // 使用国内可访问的节点
     private val nodeUrl = "https://eth-mainnet.nodereal.io/v1/54f700c58aeb4d2fb2620b817759894e"
     private val infuraURL = "https://mainnet.infura.io/v3/1659dfb40aa24bbb8153a677b98064d7"
 
@@ -185,38 +192,38 @@ internal class WalletRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    // 获取交易记录 - 使用 Etherscan API
+
+    // 获取交易记录 - 使用 NodeReal API
     override fun getTransactions(address: String, limit: Int): Flow<List<TransactionModel>> = flow {
-        // 使用 Etherscan API 直接查询地址交易记录
-        // API: https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=${limit}&sort=desc&apikey=${apiKey}
-        // https://api.etherscan.io/api
-        //   ?module=account
-        //   &action=txlist
-        //   &address=0xe93d5141767fb92e4ba4af2ced78bf81fdb6836c
-        //   &startblock=0
-        //   &endblock=99999999
-        //   &page=1
-        //   &offset=10
-        //   &sort=asc
-        //   &apikey=N5SG14C1TXZN7917ECQY6KUFW7BEF7M1J3
-        // TODO: 集成 Etherscan API 或其他第三方服务
-        // 临时返回模拟数据
-        val mockTransactions = listOf(
-            TransactionModel(
-                hash = "0x1234567890abcdef",
-                from = "0xabcdef1234567890", 
-                to = address,
-                value = "1000000000000000000", // 1 ETH
-                gasUsed = "21000",
-                gasPrice = "20000000000",
-                blockNumber = "18500000",
-                timestamp = System.currentTimeMillis() - 86400000
+        val request = NodeRealRequest(
+            params = listOf(
+                TransactionParams(
+                    address = address,
+                    maxCount = "0x${limit.toString(16)}",
+                )
             )
         )
         
-        LogUtils.e("当前使用模拟数据，生产环境需要集成 Etherscan API")
-        emit(mockTransactions)
+        val response = apiService.getTransactions(
+            url = nodeUrl,
+            request = request
+        )
+        LogUtils.e("NodeReal API 返回的数据: ${response}")
+        val transactions = response?.result?.transfers?.map { tx ->
+            TransactionModel(
+                hash = tx.hash,
+                from = tx.from,
+                to = tx.to,
+                value = tx.value,
+                gasUsed = tx.gasUsed,
+                gasPrice = tx.gasPrice,
+                blockNumber = tx.blockNum,
+                timestamp = tx.blockTimeStamp.toLong() * 1000
+            )
+        } ?: emptyList()
+        emit(transactions)
     }.catch {
+        it.printStackTrace()
         LogUtils.e("获取交易记录失败: ${it.message}")
         emit(emptyList())
     }.flowOn(Dispatchers.IO)

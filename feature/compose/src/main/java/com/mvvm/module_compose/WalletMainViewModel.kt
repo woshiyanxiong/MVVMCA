@@ -1,10 +1,12 @@
 package com.mvvm.module_compose
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.data.wallet.model.TransactionModel
 import com.data.wallet.repo.IWalletRepository
+import com.google.gson.Gson
 import com.mvvm.logcat.LogUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -52,9 +54,10 @@ class WalletMainViewModel @Inject constructor(
                     val ethPrice = 2000.0 // 假设ETH价格
                     val ethValue = String.format("$%.2f", ethBalance.toDouble() * ethPrice)
                     
-//                    // 获取交易记录
-//                    val transactions = walletRepository
-//                        .getTransactions(currentAddress, 5).firstOrNull() ?: emptyList()
+                    // 获取交易记录
+                    val transactions = walletRepository
+                        .getTransactions(currentAddress, 5).firstOrNull() ?: emptyList()
+                    Log.e("交易记录",Gson().toJson(transactions))
                     
                     _state.value = _state.value.copy(
                         isLoading = false,
@@ -62,6 +65,7 @@ class WalletMainViewModel @Inject constructor(
                         ethBalance = String.format("%.4f", ethBalance),
                         ethValue = ethValue,
                         walletList = walletList,
+                        transactions = transactions
                     )
                 } else {
                     _state.value = _state.value.copy(
