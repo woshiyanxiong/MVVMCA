@@ -11,11 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -24,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alibaba.android.arouter.facade.annotation.Route
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.text.style.TextOverflow
+import com.mvvm.module_compose.uistate.TransactionUIState
 
 @AndroidEntryPoint
 @Route(path = "/wallet/main")
@@ -64,14 +62,7 @@ data class Asset(
     val icon: String = "💰"
 )
 
-data class Transaction(
-    val type: String, // "send" or "receive"
-    val amount: String,
-    val symbol: String,
-    val address: String,
-    val time: String,
-    val status: String = "success"
-)
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -254,13 +245,7 @@ fun WalletMainScreen(
                         } else {
                             state.transactions.forEach { transaction ->
                                 TransactionItem(
-                                    transaction = Transaction(
-                                        type = if (transaction.to.equals(state.walletAddress, true)) "receive" else "send",
-                                        amount = convertWeiToEth(transaction.value),
-                                        symbol = "ETH",
-                                        address = if (transaction.to.equals(state.walletAddress, true)) transaction.from else transaction.to,
-                                        time = formatTime(transaction.timestamp)
-                                    )
+                                    transaction = transaction
                                 )
                                 if (transaction != state.transactions.last()) {
                                     Divider(modifier = Modifier.padding(vertical = 8.dp))
@@ -360,15 +345,30 @@ fun AssetItem(asset: Asset) {
         }
     }
 }
+@Preview
+@Composable
+fun TransactionItemView(){
+    TransactionItem(TransactionUIState(
+        isReceive = true,
+        amount = "0.01",
+        symbol = "ETH",
+        address = "0x1234567890",
+        time = "2023-01-01 12:00:00"
+    ))
+}
+
 
 @Composable
-fun TransactionItem(transaction: Transaction) {
+fun TransactionItem(transaction: TransactionUIState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(50.dp)
+            .background(color = Color.Red)
             .clickable { },
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -377,7 +377,7 @@ fun TransactionItem(transaction: Transaction) {
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        if (transaction.type == "receive") 
+                        if (transaction.isReceive)
                             MaterialTheme.colorScheme.primaryContainer 
                         else 
                             MaterialTheme.colorScheme.errorContainer,
@@ -386,27 +386,31 @@ fun TransactionItem(transaction: Transaction) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (transaction.type == "receive") 
+                    imageVector = if (transaction.isReceive)
                         Icons.Default.KeyboardArrowDown 
                     else 
                         Icons.Default.KeyboardArrowUp,
-                    contentDescription = transaction.type,
-                    tint = if (transaction.type == "receive") 
+                    contentDescription = "${transaction.isReceive}",
+                    tint = if (transaction.isReceive)
                         MaterialTheme.colorScheme.onPrimaryContainer 
                     else 
                         MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.size(20.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
+            Spacer(modifier = Modifier.width(4.dp))
+            Column(modifier = Modifier.width(IntrinsicSize.Min)) {
                 Text(
-                    text = if (transaction.type == "receive") "收到" else "发送",
+                    text = if (transaction.isReceive) "收到" else "发送",
                     fontWeight = FontWeight.Medium
                 )
                 Text(
+                    modifier = Modifier.fillMaxWidth(),
                     text = transaction.address,
+                    overflow = TextOverflow.Ellipsis,
                     fontSize = 12.sp,
+                    softWrap = false,
+                    maxLines = 1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -416,9 +420,9 @@ fun TransactionItem(transaction: Transaction) {
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = "${if (transaction.type == "receive") "+" else "-"}${transaction.amount} ${transaction.symbol}",
+                text = "${if (transaction.isReceive) "+" else "-"}${transaction.amount} ${transaction.symbol}",
                 fontWeight = FontWeight.Medium,
-                color = if (transaction.type == "receive") 
+                color = if (transaction.isReceive)
                     MaterialTheme.colorScheme.primary 
                 else 
                     MaterialTheme.colorScheme.error

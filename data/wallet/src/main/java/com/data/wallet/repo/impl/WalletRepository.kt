@@ -1,48 +1,43 @@
 package com.data.wallet.repo.impl
 
 import android.util.Log
-import com.data.wallet.repo.IWalletRepository
-import com.data.wallet.repo.CreateWalletResult
-import com.data.wallet.model.*
-import org.web3j.protocol.Web3j
-import org.web3j.protocol.http.HttpService
-import org.web3j.crypto.Credentials
-import org.web3j.crypto.WalletUtils
-import org.web3j.protocol.core.DefaultBlockParameterName
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import java.math.BigInteger
-import java.math.BigDecimal
-import java.security.SecureRandom
-import javax.inject.Inject
-import java.io.File
-import org.web3j.crypto.RawTransaction
-import org.web3j.crypto.TransactionEncoder
-import org.web3j.utils.Convert
-import org.web3j.utils.Numeric
-import org.bitcoinj.crypto.MnemonicCode
-import org.bitcoinj.crypto.DeterministicKey
-import org.bitcoinj.crypto.HDKeyDerivation
-import org.bitcoinj.crypto.MnemonicException
-import org.bitcoinj.crypto.ChildNumber
-import com.data.wallet.storage.WalletStore
-import com.mvvm.logcat.LogUtils
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flowOn
+import com.data.wallet.api.CoinGeckoApi
 import com.data.wallet.api.NodeRealApi
 import com.data.wallet.api.NodeRealRequest
 import com.data.wallet.api.TransactionParams
-import com.data.wallet.api.CoinGeckoApi
 import com.data.wallet.entity.MainWalletInfoEntity
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import okhttp3.OkHttpClient
+import com.data.wallet.model.CreateWalletRequest
+import com.data.wallet.model.ImportWalletRequest
+import com.data.wallet.model.TransactionModel
+import com.data.wallet.repo.CreateWalletResult
+import com.data.wallet.repo.IWalletRepository
+import com.data.wallet.storage.WalletStore
+import com.mvvm.logcat.LogUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
+import org.bitcoinj.crypto.ChildNumber
+import org.bitcoinj.crypto.HDKeyDerivation
+import org.bitcoinj.crypto.MnemonicCode
+import org.bitcoinj.crypto.MnemonicException
+import org.web3j.crypto.Credentials
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.TransactionEncoder
+import org.web3j.crypto.WalletUtils
+import org.web3j.protocol.Web3j
+import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.http.HttpService
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.security.SecureRandom
 import java.util.Locale
-import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 internal class WalletRepository @Inject constructor(
     private val walletStore: WalletStore,
@@ -122,15 +117,16 @@ internal class WalletRepository @Inject constructor(
                 val currentAddress = walletList.firstOrNull() ?: ""
                 LogUtils.e("当前地址: $currentAddress")
                 // 获取ETH余额
-                val balance = getBalance(currentAddress).firstOrNull() ?: BigInteger("0")
+                val walletBalance = getBalance(currentAddress).firstOrNull() ?: BigInteger("0")
+                val balance = convertWeiToEth(walletBalance)
                 val transactions = getTransactions(currentAddress, 5).firstOrNull() ?: emptyList()
-                val ethPrice = getEthPrice().firstOrNull() ?: 0.0
+                val ethPrice = 2000.0
                 val ethValue = String.format(Locale.US,"$%.2f", (balance.toDouble() * ethPrice))
                 return@flow emit(
                     MainWalletInfoEntity(
                         currentAddress = currentAddress,
                         walletList = walletList,
-                        balance = balance,
+                        balance = String.format(Locale.US, "%.4f", balance),
                         ethValue = ethValue,
                         transaction = transactions
                     )
@@ -138,6 +134,7 @@ internal class WalletRepository @Inject constructor(
             }
             emit(null)
         }.catch {
+            it.printStackTrace()
             emit(null)
         }.flowOn(Dispatchers.IO)
     }
@@ -234,6 +231,7 @@ internal class WalletRepository @Inject constructor(
                 )
             )
         )
+        val currentAddress = getWalletList().firstOrNull()?.firstOrNull()
 
         val response = apiService.getTransactions(
             url = nodeUrl,
@@ -249,6 +247,7 @@ internal class WalletRepository @Inject constructor(
                 gasUsed = tx.gasUsed,
                 gasPrice = tx.gasPrice,
                 blockNumber = tx.blockNum,
+                isReceive = tx.to == currentAddress,
                 timestamp = tx.blockTimeStamp.toLong() * 1000
             )
         } ?: emptyList()
@@ -302,5 +301,18 @@ internal class WalletRepository @Inject constructor(
         walletStore.saveWalletInfo(address, name, fileName)
         // 设置为当前钱包
         walletStore.saveCurrentWalletAddress(address)
+    }
+
+    private fun convertWeiToEth(wei: BigInteger?): BigDecimal {
+        val weiInEth = BigDecimal("1000000000000000000") // 10^18
+        return BigDecimal(wei).divide(weiInEth)
+    }
+    private fun formatAddress(address: String?): String {
+        if (address.isNullOrEmpty()) return ""
+        return if (address.length > 10) {
+            "${address.substring(0, 6)}...${address.substring(address.length - 4)}"
+        } else {
+            address
+        }
     }
 }

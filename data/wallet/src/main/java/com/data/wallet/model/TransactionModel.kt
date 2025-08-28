@@ -22,19 +22,7 @@ data class TransactionModel(
     val gasPrice: String,
     val blockNumber: String,
     val timestamp: Long,
+    val isReceive:Boolean,
     val status: String = "success" // success, failed, pending
 ) {
-    /**
-     * 判断是否为接收交易
-     * 通过比较发送方和接收方地址是否相同来判断
-     */
-    val isReceive: Boolean
-        get() = to.lowercase() == from.lowercase()
-    
-    /**
-     * 交易类型
-     * @return "receive" 表示接收交易，"send" 表示发送交易
-     */    
-    val type: String
-        get() = if (isReceive) "receive" else "send"
 }

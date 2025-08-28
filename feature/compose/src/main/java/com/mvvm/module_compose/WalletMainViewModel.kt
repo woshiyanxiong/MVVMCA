@@ -1,10 +1,12 @@
 package com.mvvm.module_compose
 
+import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.component.ext.signalFlow
 import com.data.wallet.model.TransactionModel
 import com.data.wallet.repo.IWalletRepository
+import com.mvvm.module_compose.uistate.TransactionUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,9 +14,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.util.Locale
 import javax.inject.Inject
 
 data class WalletMainState(
@@ -23,7 +22,7 @@ data class WalletMainState(
     val ethBalance: String = "0.0",
     val ethValue: String = "$0.00",
     val walletList: List<String> = emptyList(),
-    val transactions: List<TransactionModel> = emptyList(),
+    val transactions: List<TransactionUIState> = emptyList(),
     val error: String? = null
 )
 
@@ -35,27 +34,29 @@ class WalletMainViewModel @Inject constructor(
     val state: StateFlow<WalletMainState> = _getInfo.flatMapLatest {
         walletRepository.getMainWalletInfo()
     }.mapNotNull { entity ->
-        val ethBalance = convertWeiToEth(entity?.balance)
         WalletMainState(
             isLoading = false,
             walletAddress = formatAddress(entity?.currentAddress),
-            ethBalance = String.format(Locale.US, "%.4f", ethBalance),
+            ethBalance = entity?.balance?: "0.00",
             ethValue = entity?.ethValue ?: "$0.00",
             walletList = entity?.walletList ?: emptyList(),
-            transactions = entity?.transaction ?: emptyList()
+            transactions = entity?.transaction?.map { transaction->
+                TransactionUIState(
+                    isReceive = transaction.isReceive,
+                    amount = convertWeiToEth(transaction.value),
+                    symbol = "ETH",
+                    address = formatAddress(if (transaction.isReceive) transaction.from else transaction.to),
+                    time = formatTime(transaction.timestamp)
+                )
+            }?: emptyList()
         )
     }.onStart {
-        WalletMainState(isLoading = true, error = null)
+        emit(WalletMainState(isLoading = true, error = null))
     }.stateIn(viewModelScope, SharingStarted.Lazily, WalletMainState())
 
 
     fun loadWalletData() {
         _getInfo.tryEmit(true)
-    }
-
-    private fun convertWeiToEth(wei: BigInteger?): BigDecimal {
-        val weiInEth = BigDecimal("1000000000000000000") // 10^18
-        return BigDecimal(wei).divide(weiInEth)
     }
 
     private fun formatAddress(address: String?): String {

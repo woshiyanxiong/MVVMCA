@@ -7,7 +7,7 @@ import java.math.BigInteger
 data class MainWalletInfoEntity(
     val currentAddress:String,
     val walletList:List<String>,
-    val balance: BigInteger,
+    val balance: String,
     val ethValue: String,
     val transaction:List<TransactionModel>
 )
