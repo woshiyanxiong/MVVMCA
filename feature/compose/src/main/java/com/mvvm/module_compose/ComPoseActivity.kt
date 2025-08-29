@@ -45,7 +45,7 @@ class ComPoseActivity : ComponentActivity() {
                                 startActivity(Intent(this@ComPoseActivity, WalletMainActivity::class.java))
                             },
                             onImportWallet = {
-                                // 跳转到导入钱包页面
+                                startActivity(Intent(this@ComPoseActivity, ComPoseActivity::class.java))
                             }
                         )
                     }
