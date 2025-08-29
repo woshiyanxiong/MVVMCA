@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.alibaba.android.arouter.facade.annotation.Route
+import com.mvvm.module_compose.view.WalletEmptyScreen
 
 /**
  * Created by yan_x

@@ -49,13 +49,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.alibaba.android.arouter.facade.annotation.Route
+import com.mvvm.module_compose.vm.WalletCreationState
+import com.mvvm.module_compose.vm.WalletCreationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 
 @AndroidEntryPoint
 @Route(path = "/wallet/create")
 class CreateWalletActivity : ComponentActivity() {
-    private val viewModel:WalletCreationViewModel by viewModels()
+    private val viewModel: WalletCreationViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

@@ -1,21 +1,17 @@
-package com.mvvm.module_compose
+package com.mvvm.module_compose.vm
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.component.ext.signalFlow
 import com.data.wallet.model.CreateWalletRequest
-import com.data.wallet.repo.CreateWalletResult
 import com.data.wallet.repo.IWalletRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 

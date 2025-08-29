@@ -32,6 +32,8 @@ import com.alibaba.android.arouter.facade.annotation.Route
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.text.style.TextOverflow
 import com.mvvm.module_compose.uistate.TransactionUIState
+import com.mvvm.module_compose.vm.WalletMainState
+import com.mvvm.module_compose.vm.WalletMainViewModel
 
 @AndroidEntryPoint
 @Route(path = "/wallet/main")
