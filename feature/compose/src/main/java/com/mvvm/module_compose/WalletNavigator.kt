@@ -31,4 +31,13 @@ object WalletNavigator {
             .build("/wallet/settings")
             .navigation(context)
     }
+    
+    /**
+     * 跳转到账户管理页面
+     */
+    fun navigateToAccount(context: Context) {
+        ARouter.getInstance()
+            .build("/wallet/account")
+            .navigation(context)
+    }
 }
