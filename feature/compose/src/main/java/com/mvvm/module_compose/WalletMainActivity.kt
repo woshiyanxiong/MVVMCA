@@ -49,7 +49,8 @@ class WalletMainActivity : ComponentActivity() {
                 val state = viewModel.state.collectAsStateWithLifecycle()
                 WalletMainScreen(
                     state = state.value,
-                    onLoadData = { viewModel.loadWalletData() }
+                    onLoadData = { viewModel.loadWalletData() },
+                    context = this@WalletMainActivity
                 )
             }
         }
@@ -70,7 +71,8 @@ data class Asset(
 @Composable
 fun WalletMainScreen(
     state: WalletMainState = WalletMainState(),
-    onLoadData: () -> Unit = {}
+    onLoadData: () -> Unit = {},
+    context: android.content.Context = androidx.compose.ui.platform.LocalContext.current
 ) {
     // 页面加载时获取数据
     LaunchedEffect(Unit) {
@@ -90,7 +92,9 @@ fun WalletMainScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { 
+                        WalletNavigator.navigateToSettings(context)
+                    }) {
                         Icon(Icons.Default.Settings, contentDescription = "设置")
                     }
                 }

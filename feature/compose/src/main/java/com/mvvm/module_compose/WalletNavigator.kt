@@ -22,4 +22,13 @@ object WalletNavigator {
             .build("/wallet/main")
             .navigation(context)
     }
+    
+    /**
+     * 跳转到设置页面
+     */
+    fun navigateToSettings(context: Context) {
+        ARouter.getInstance()
+            .build("/wallet/settings")
+            .navigation(context)
+    }
 }
