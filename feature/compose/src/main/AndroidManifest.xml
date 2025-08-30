@@ -13,6 +13,8 @@
         <activity android:name=".WalletMainActivity"/>
         <activity android:name=".WalletCreatedSuccessActivity"/>
         <activity android:name=".splash.WalletSplashActivity"/>
+        <activity android:name=".WalletImportActivity"/>
+        <activity android:name=".WalletSettingsActivity"/>
 
     </application>
 </manifest>

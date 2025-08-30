@@ -22,4 +22,22 @@ object WalletNavigator {
             .build("/wallet/main")
             .navigation(context)
     }
+    
+    /**
+     * 跳转到设置页面
+     */
+    fun navigateToSettings(context: Context) {
+        ARouter.getInstance()
+            .build("/wallet/settings")
+            .navigation(context)
+    }
+    
+    /**
+     * 跳转到账户管理页面
+     */
+    fun navigateToAccount(context: Context) {
+        ARouter.getInstance()
+            .build("/wallet/account")
+            .navigation(context)
+    }
 }

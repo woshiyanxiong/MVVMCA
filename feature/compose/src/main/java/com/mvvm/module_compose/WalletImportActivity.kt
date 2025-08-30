@@ -40,6 +40,15 @@ class WalletImportActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 val state = viewModel.state.collectAsStateWithLifecycle()
+                
+                // 导入成功后跳转到主界面
+                LaunchedEffect(state.value.isSuccess) {
+                    if (state.value.isSuccess) {
+                        WalletNavigator.navigateToMain(this@WalletImportActivity)
+                        finish()
+                    }
+                }
+                
                 WalletImportScreen(
                     state = state.value,
                     onMnemonicChange = viewModel::updateMnemonic,
