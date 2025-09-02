@@ -8,6 +8,7 @@
             android:name=".ComPoseActivity"
             tools:ignore="WrongManifestParent" />
         <activity android:name=".CreateWalletActivity"/>
+        <activity android:name=".MnemonicWarningActivity"/>
         <activity android:name=".MnemonicBackupActivity"/>
         <activity android:name=".MnemonicVerifyActivity"/>
         <activity android:name=".WalletMainActivity"/>
@@ -15,6 +16,8 @@
         <activity android:name=".splash.WalletSplashActivity"/>
         <activity android:name=".WalletImportActivity"/>
         <activity android:name=".WalletSettingsActivity"/>
+        <activity android:name=".CreatePasswordActivity"/>
+        <activity android:name=".account.AccountActivity"/>
 
     </application>
 </manifest>

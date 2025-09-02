@@ -4,13 +4,11 @@ import android.content.Context
 import android.util.Log
 import com.dianping.logan.BuildConfig
 import com.dianping.logan.Logan
-import com.dianping.logan.LoganConfig
 import com.elvishew.xlog.XLog
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
-import java.lang.Character.LINE_SEPARATOR
 
 /**
  * Created by yan_x
@@ -34,8 +32,12 @@ object LogUtils {
         XLog.i(tag, msg)
     }
 
-    fun e(msg: String) {
-       Log.e("error", msg)
+    fun e(tag: String?, msg: String?) {
+        XLog.e(tag, ""+msg)
+    }
+
+    fun e( msg: String?) {
+        XLog.e("error", ""+msg)
     }
 
     fun v(tag: String, msg: String) {

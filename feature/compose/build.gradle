@@ -49,4 +49,5 @@ dependencies {
     
     // Wallet module
     implementation project(':data:wallet')
+//    implementation project(':domain:wallet')
 }

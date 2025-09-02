@@ -50,6 +50,13 @@ internal class WalletRepository @Inject constructor(
     private val nodeUrl = "https://eth-mainnet.nodereal.io/v1/${noteKey}"
     private val infuraURL = "https://mainnet.infura.io/v3/1659dfb40aa24bbb8153a677b98064d7"
 
+    private val test = "\"fatal, stand, various, brisk, aisle, object, proof, skull, else, runway, jaguar, unique\""
+
+    /**
+     * [police, country, actual, grief, electric, flat, scan, shadow, tip, skate, boil, begin]
+     *
+     */
+    private val testHome = ""
     // 创建Web3j实例
     private val web3: Web3j = Web3j.build(HttpService(nodeUrl))
 
@@ -115,7 +122,7 @@ internal class WalletRepository @Inject constructor(
             val walletList = getWalletList().firstOrNull()
             if (walletList?.isNotEmpty() == true) {
                 val currentAddress = walletList.firstOrNull() ?: ""
-                LogUtils.e("当前地址: $currentAddress")
+                LogUtils.e("当前地址: $currentAddress" )
                 // 获取ETH余额
                 val walletBalance = getBalance(currentAddress).firstOrNull() ?: BigInteger("0")
                 val balance = convertWeiToEth(walletBalance)
@@ -140,18 +147,18 @@ internal class WalletRepository @Inject constructor(
     }
 
     override fun createWallet(request: CreateWalletRequest): Flow<CreateWalletResult?> = flow {
-        val currentAddress = walletStore.getCurrentWalletAddress().firstOrNull()
-        if (!currentAddress.isNullOrBlank()) {
-            val file = walletStore.getWalletFileName(currentAddress).firstOrNull() ?: ""
-            val entity = CreateWalletResult(
-                mnemonic = ("fatal, stand, various, brisk, aisle, object, proof, skull, else, runway, jaguar, unique").split(
-                    ", "
-                ),
-                walletAddress = currentAddress,
-                walletFileName = file
-            )
-            return@flow emit(entity)
-        }
+//        val currentAddress = walletStore.getCurrentWalletAddress().firstOrNull()
+//        if (!currentAddress.isNullOrBlank()) {
+//            val file = walletStore.getWalletFileName(currentAddress).firstOrNull() ?: ""
+//            val entity = CreateWalletResult(
+//                mnemonic = ("fatal, stand, various, brisk, aisle, object, proof, skull, else, runway, jaguar, unique").split(
+//                    ", "
+//                ),
+//                walletAddress = currentAddress,
+//                walletFileName = file
+//            )
+//            return@flow emit(entity)
+//        }
         // 1. 生成助记词
         val mnemonic = generateMnemonic().firstOrNull() ?: emptyList()
         Log.e("createWallet", "生成助记词=${mnemonic}")
@@ -181,7 +188,7 @@ internal class WalletRepository @Inject constructor(
         )
         emit(result)
     }.catch {
-        LogUtils.e("创建钱包发生了异常,${it.message}")
+        LogUtils.e("创建钱包发生了异常,${it.message}" )
         emit(null)
     }.flowOn(Dispatchers.IO)
 
@@ -237,7 +244,7 @@ internal class WalletRepository @Inject constructor(
             url = nodeUrl,
             request = request
         )
-        LogUtils.e("NodeReal API 返回的数据: ${response}")
+        LogUtils.e("NodeReal API 返回的数据: ${response}" )
         val transactions = response?.result?.transfers?.map { tx ->
             TransactionModel(
                 hash = tx.hash,
@@ -254,7 +261,7 @@ internal class WalletRepository @Inject constructor(
         emit(transactions)
     }.catch {
         it.printStackTrace()
-        LogUtils.e("获取交易记录失败: ${it.message}")
+        LogUtils.e("获取交易记录失败: ${it.message}" )
         emit(emptyList())
     }.flowOn(Dispatchers.IO)
 
@@ -263,7 +270,7 @@ internal class WalletRepository @Inject constructor(
         val response = coinGeckoApi.getPrice()
         emit(response.ethereum.usd)
     }.catch {
-        LogUtils.e("获取ETH价格失败: ${it.message}")
+        LogUtils.e("获取ETH价格失败: ${it.message}" )
         emit(0.0)
     }.flowOn(Dispatchers.IO)
 

@@ -43,10 +43,12 @@ class ComPoseActivity : ComponentActivity() {
                         // 检查用户是否有钱包，如果没有显示空状态页面
                         WalletEmptyScreen(
                             onCreateWallet = {
-                                startActivity(Intent(this@ComPoseActivity, WalletMainActivity::class.java))
+                                startActivity(Intent(this@ComPoseActivity, CreatePasswordActivity::class.java))
+                                finish()
                             },
                             onImportWallet = {
-                                startActivity(Intent(this@ComPoseActivity, ComPoseActivity::class.java))
+                                startActivity(Intent(this@ComPoseActivity, WalletImportActivity::class.java))
+                                finish()
                             }
                         )
                     }

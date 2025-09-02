@@ -18,6 +18,8 @@ data class CreateWalletResult(
 interface IWalletRepository {
     fun getWalletList(): Flow<List<String>>
 
+//    fun sendTransaction()
+
     /**
      * 获取当前信息
      */

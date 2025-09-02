@@ -10,11 +10,10 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class AccountModule {
+internal interface  AccountModule {
     
     @Binds
-    @Singleton
-    abstract fun bindAccountRepository(
+    fun bindAccountRepository(
         accountRepository: AccountRepository
     ): IAccountRepository
 }

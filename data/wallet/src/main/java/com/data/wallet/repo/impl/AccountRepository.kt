@@ -9,9 +9,7 @@ import kotlinx.coroutines.flow.*
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.Keys
 import org.web3j.protocol.Web3j
-import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.http.HttpService
-import java.math.BigInteger
 import javax.inject.Inject
 
 internal class AccountRepository @Inject constructor(
@@ -35,22 +33,24 @@ internal class AccountRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
     
-    override fun createAccount(name: String): Flow<AccountModel?> = flow {
-        val credentials = Credentials.create(Keys.createEcKeyPair())
-        val account = AccountModel(
-            address = credentials.address,
-            name = name,
-            privateKey = credentials.ecKeyPair.privateKey.toString(16)
-        )
-        
-        accountStore.saveAccount(account).firstOrNull()
-        emit(account)
-    }.catch {
-        LogUtils.e("创建账户失败: ${it.message}")
-        emit(null)
-    }.flowOn(Dispatchers.IO)
+    override fun createAccount(name: String): Flow<AccountModel?>  {
+       return flow<AccountModel?> {
+            val credentials = Credentials.create(Keys.createEcKeyPair())
+            val account = AccountModel(
+                address = credentials.address,
+                name = name,
+                privateKey = credentials.ecKeyPair.privateKey.toString(16)
+            )
+
+            accountStore.saveAccount(account)
+            emit(account)
+        }.catch {
+            LogUtils.e("创建账户失败: ${it.message}")
+            emit(null)
+        }.flowOn(Dispatchers.IO)
+    }
     
-    override fun importAccount(privateKey: String, name: String): Flow<AccountModel?> = flow {
+    override fun importAccount(privateKey: String, name: String): Flow<AccountModel?> = flow<AccountModel?> {
         val credentials = Credentials.create(privateKey)
         val account = AccountModel(
             address = credentials.address,
@@ -58,7 +58,7 @@ internal class AccountRepository @Inject constructor(
             privateKey = privateKey
         )
         
-        accountStore.saveAccount(account).firstOrNull()
+        accountStore.saveAccount(account)
         emit(account)
     }.catch {
         LogUtils.e("导入账户失败: ${it.message}")
@@ -66,7 +66,7 @@ internal class AccountRepository @Inject constructor(
     }.flowOn(Dispatchers.IO)
     
     override fun switchAccount(address: String): Flow<Boolean> = flow {
-        accountStore.setCurrentAccount(address).firstOrNull()
+        accountStore.setCurrentAccount(address)
         emit(true)
     }.catch {
         LogUtils.e("切换账户失败: ${it.message}")
@@ -74,7 +74,7 @@ internal class AccountRepository @Inject constructor(
     }.flowOn(Dispatchers.IO)
     
     override fun deleteAccount(address: String): Flow<Boolean> = flow {
-        accountStore.deleteAccount(address).firstOrNull()
+        accountStore.deleteAccount(address)
         emit(true)
     }.catch {
         LogUtils.e("删除账户失败: ${it.message}")
@@ -83,10 +83,30 @@ internal class AccountRepository @Inject constructor(
 
     
     override fun updateAccountName(address: String, name: String): Flow<Boolean> = flow {
-        accountStore.updateAccountName(address, name).firstOrNull()
+        accountStore.updateAccountName(address, name)
         emit(true)
     }.catch {
         LogUtils.e("更新账户名称失败: ${it.message}")
+        emit(false)
+    }.flowOn(Dispatchers.IO)
+    
+    override fun saveWalletPassword(password: String): Flow<Boolean> = flow {
+        accountStore.saveWalletPassword(password)
+        emit(true)
+    }.catch {
+        LogUtils.e("保存钱包密码失败: ${it.message}")
+        emit(false)
+    }.flowOn(Dispatchers.IO)
+
+    override fun getWalletPassword(): Flow<String?> {
+        return accountStore.getWalletPassword()
+    }
+    
+    override fun verifyWalletPassword(password: String): Flow<Boolean> = flow {
+        val isValid = accountStore.verifyWalletPassword(password)
+        emit(isValid)
+    }.catch {
+        LogUtils.e("验证密码失败: ${it.message}")
         emit(false)
     }.flowOn(Dispatchers.IO)
 }

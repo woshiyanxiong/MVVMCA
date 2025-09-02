@@ -1,124 +1,187 @@
 package com.data.wallet.storage
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.data.wallet.model.AccountModel
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.mvvm.logcat.LogUtils
+import com.mvvm.storage.DataStorePre
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val Context.accountDataStore: DataStore<Preferences> by preferencesDataStore(name = "account_prefs")
-
 @Singleton
 class AccountStore @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val gson: Gson
+    @ApplicationContext val context: Context
 ) {
-    private val accountListKey = stringPreferencesKey("account_list")
-    private val currentAccountKey = stringPreferencesKey("current_account")
-    
+    companion object {
+        val accountStore = DataStorePre(AccountStore::class.java.name)
+    }
+
+    // 账户列表存储键
+    private val accountListKey = "accountListKey"
+    // 当前选中账户地址
+    private val currentAccountKey = "currentAccountKey"
+    // 账户名称前缀
+    private val accountNamePrefix = "accountName_"
+    // 账户私钥前缀
+    private val accountPrivateKeyPrefix = "accountPrivateKey_"
+
+    /**
+     * 保存账户地址列表
+     */
+    suspend fun saveAccountList(addresses: List<String>) {
+        val addressesString = addresses.joinToString(",")
+        accountStore.saveData(context, accountListKey, addressesString)
+    }
+
+    /**
+     * 获取账户地址列表
+     */
+    fun getAccountList(): Flow<List<String>> {
+        return accountStore.getData<String>(context, accountListKey, "").map { addressesString ->
+            if (addressesString.isNullOrEmpty()) {
+                emptyList()
+            } else {
+                addressesString.split(",").filter { it.isNotEmpty() }
+            }
+        }
+    }
+
+    /**
+     * 添加新账户地址
+     */
+    suspend fun addAccountAddress(address: String) {
+        val currentList = getAccountList().first()
+        val newList = currentList.toMutableList()
+        if (!newList.contains(address)) {
+            newList.add(address)
+            saveAccountList(newList)
+        }
+    }
+
+    /**
+     * 保存账户信息
+     */
+    suspend fun saveAccount(account: AccountModel) {
+        accountStore.saveData(context, accountNamePrefix + account.address, account.name)
+        accountStore.saveData(context, accountPrivateKeyPrefix + account.address, account.privateKey)
+        addAccountAddress(account.address)
+    }
+
+    /**
+     * 获取账户名称
+     */
+    fun getAccountName(address: String): Flow<String?> {
+        return accountStore.getData<String>(context, accountNamePrefix + address, "")
+    }
+
+    /**
+     * 获取账户私钥
+     */
+    fun getAccountPrivateKey(address: String): Flow<String?> {
+        return accountStore.getData<String>(context, accountPrivateKeyPrefix + address, "")
+    }
+
     /**
      * 获取所有账户
      */
     fun getAllAccounts(): Flow<List<AccountModel>> {
-        return context.accountDataStore.data.map { preferences ->
-            val json = preferences[accountListKey] ?: "[]"
-            val type = object : TypeToken<List<AccountModel>>() {}.type
-            gson.fromJson(json, type) ?: emptyList()
+        return getAccountList().map { addresses ->
+            addresses.mapNotNull { address ->
+                val name = getAccountName(address).first()
+                val privateKey = getAccountPrivateKey(address).first()
+                if (!name.isNullOrEmpty() && !privateKey.isNullOrEmpty()) {
+                    AccountModel(address = address, name = name, privateKey = privateKey)
+                } else {
+                    null
+                }
+            }
         }
     }
-    
+
+    /**
+     * 保存当前选中的账户地址
+     */
+    suspend fun setCurrentAccount(address: String) {
+        accountStore.saveData(context, currentAccountKey, address)
+    }
+
+    /**
+     * 获取当前选中的账户地址
+     */
+    fun getCurrentAccountAddress(): Flow<String?> {
+        return accountStore.getData<String>(context, currentAccountKey, "")
+    }
+
     /**
      * 获取当前账户
      */
     fun getCurrentAccount(): Flow<AccountModel?> {
-        return context.accountDataStore.data.map { preferences ->
-            val address = preferences[currentAccountKey]
-            if (address != null) {
-                val accounts = getAllAccounts()
-                // 这里需要同步获取，实际使用中可能需要优化
-                null // 临时返回null，实际需要根据address查找
+        return getCurrentAccountAddress().map { address ->
+            if (!address.isNullOrEmpty()) {
+                val name = getAccountName(address).first()
+                val privateKey = getAccountPrivateKey(address).first()
+                if (!name.isNullOrEmpty() && !privateKey.isNullOrEmpty()) {
+                    AccountModel(address = address, name = name, privateKey = privateKey)
+                } else {
+                    null
+                }
             } else {
                 null
             }
         }
     }
-    
-    /**
-     * 保存账户
-     */
-    suspend fun saveAccount(account: AccountModel): Flow<Unit> {
-        context.accountDataStore.edit { preferences ->
-            val json = preferences[accountListKey] ?: "[]"
-            val type = object : TypeToken<List<AccountModel>>() {}.type
-            val accounts = gson.fromJson<List<AccountModel>>(json, type)?.toMutableList() ?: mutableListOf()
-            
-            // 检查是否已存在
-            val existingIndex = accounts.indexOfFirst { it.address == account.address }
-            if (existingIndex >= 0) {
-                accounts[existingIndex] = account
-            } else {
-                accounts.add(account)
-            }
-            
-            preferences[accountListKey] = gson.toJson(accounts)
-        }
-        return kotlinx.coroutines.flow.flowOf(Unit)
-    }
-    
-    /**
-     * 设置当前账户
-     */
-    suspend fun setCurrentAccount(address: String): Flow<Unit> {
-        context.accountDataStore.edit { preferences ->
-            preferences[currentAccountKey] = address
-        }
-        return kotlinx.coroutines.flow.flowOf(Unit)
-    }
-    
+
     /**
      * 删除账户
      */
-    suspend fun deleteAccount(address: String): Flow<Unit> {
-        context.accountDataStore.edit { preferences ->
-            val json = preferences[accountListKey] ?: "[]"
-            val type = object : TypeToken<List<AccountModel>>() {}.type
-            val accounts = gson.fromJson<List<AccountModel>>(json, type)?.toMutableList() ?: mutableListOf()
-            
-            accounts.removeAll { it.address == address }
-            preferences[accountListKey] = gson.toJson(accounts)
-            
-            // 如果删除的是当前账户，清除当前账户设置
-            if (preferences[currentAccountKey] == address) {
-                preferences.remove(currentAccountKey)
-            }
+    suspend fun deleteAccount(address: String) {
+        val currentList = getAccountList().first()
+        val newList = currentList.toMutableList()
+        newList.remove(address)
+        saveAccountList(newList)
+        
+        // 清除相关数据
+        accountStore.saveData(context, accountNamePrefix + address, "")
+        accountStore.saveData(context, accountPrivateKeyPrefix + address, "")
+        
+        // 如果删除的是当前账户，清除当前账户设置
+        val currentAddress = getCurrentAccountAddress().first()
+        if (currentAddress == address) {
+            accountStore.saveData(context, currentAccountKey, "")
         }
-        return kotlinx.coroutines.flow.flowOf(Unit)
     }
-    
+
     /**
      * 更新账户名称
      */
-    suspend fun updateAccountName(address: String, name: String): Flow<Unit> {
-        context.accountDataStore.edit { preferences ->
-            val json = preferences[accountListKey] ?: "[]"
-            val type = object : TypeToken<List<AccountModel>>() {}.type
-            val accounts = gson.fromJson<List<AccountModel>>(json, type)?.toMutableList() ?: mutableListOf()
-            
-            val index = accounts.indexOfFirst { it.address == address }
-            if (index >= 0) {
-                accounts[index] = accounts[index].copy(name = name)
-                preferences[accountListKey] = gson.toJson(accounts)
-            }
-        }
-        return kotlinx.coroutines.flow.flowOf(Unit)
+    suspend fun updateAccountName(address: String, name: String) {
+        accountStore.saveData(context, accountNamePrefix + address, name)
+    }
+    
+    /**
+     * 保存钱包密码（用于Web3j钱包加密）
+     */
+    suspend fun saveWalletPassword(password: String) {
+        // 直接存储原始密码，用于Web3j钱包操作
+        accountStore.saveData(context, "walletPassword", password)
+    }
+    
+    /**
+     * 获取钱包密码
+     */
+    fun getWalletPassword(): Flow<String?> {
+        return accountStore.getData<String>(context, "walletPassword", "")
+    }
+    
+    /**
+     * 验证钱包密码
+     */
+    suspend fun verifyWalletPassword(inputPassword: String): Boolean {
+        val storedPassword = getWalletPassword().first()
+        LogUtils.e("本地密码",storedPassword)
+        return storedPassword == inputPassword
     }
 }

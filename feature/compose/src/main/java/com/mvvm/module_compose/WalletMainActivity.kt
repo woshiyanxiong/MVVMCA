@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alibaba.android.arouter.facade.annotation.Route
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.ui.text.style.TextOverflow
 import com.mvvm.module_compose.uistate.TransactionUIState
 import com.mvvm.module_compose.vm.WalletMainState
@@ -156,12 +159,12 @@ fun WalletMainScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     QuickActionButton(
-                        icon = Icons.Default.Send,
+                        iconRes = R.drawable.ic_send,
                         text = "转账",
                         onClick = { }
                     )
                     QuickActionButton(
-                        icon = Icons.Default.Add,
+                        iconRes = R.drawable.ic_receive,
                         text = "收款",
                         onClick = { }
                     )
@@ -265,92 +268,6 @@ fun WalletMainScreen(
     }
 }
 
-@Composable
-fun QuickActionButton(
-    icon: ImageVector,
-    text: String,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
-    ) {
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant,
-                    CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = text,
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = text,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-fun AssetItem(asset: Asset) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { },
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = asset.icon,
-                fontSize = 24.sp,
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        MaterialTheme.colorScheme.surfaceVariant,
-                        CircleShape
-                    )
-                    .wrapContentSize()
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = asset.name,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = asset.symbol,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        
-        Column(
-            horizontalAlignment = Alignment.End
-        ) {
-            Text(
-                text = asset.balance,
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = asset.value,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
 @Preview
 @Composable
 fun TransactionItemView(){

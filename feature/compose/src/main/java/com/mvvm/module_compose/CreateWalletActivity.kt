@@ -56,6 +56,7 @@ import java.io.File
 
 @AndroidEntryPoint
 @Route(path = "/wallet/create")
+@Deprecated("")
 class CreateWalletActivity : ComponentActivity() {
     private val viewModel: WalletCreationViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
