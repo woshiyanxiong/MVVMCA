@@ -1,5 +1,6 @@
 package com.data.wallet.repo.impl
 
+import AESCryptoUtils
 import android.util.Log
 import com.data.wallet.api.CoinGeckoApi
 import com.data.wallet.api.NodeRealApi
@@ -8,8 +9,10 @@ import com.data.wallet.api.TransactionParams
 import com.data.wallet.entity.MainWalletInfoEntity
 import com.data.wallet.model.CreateWalletRequest
 import com.data.wallet.model.ImportWalletRequest
+import com.data.wallet.model.NetworkInfo
 import com.data.wallet.model.TransactionModel
 import com.data.wallet.repo.CreateWalletResult
+import com.data.wallet.repo.INetworkRepository
 import com.data.wallet.repo.IWalletRepository
 import com.data.wallet.storage.WalletStore
 import com.mvvm.logcat.LogUtils
@@ -17,8 +20,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.HDKeyDerivation
@@ -43,22 +48,55 @@ internal class WalletRepository @Inject constructor(
     private val walletStore: WalletStore,
     private val apiService: NodeRealApi,
     private val coinGeckoApi: CoinGeckoApi,
+    private val netWorkRepository: INetworkRepository
 ) : IWalletRepository {
     private val noteKey = "54f700c58aeb4d2fb2620b817759894e"
+    private val newNoteKey = "dba7fde082124c78b2809090d48bd69a"
     private val ETH_API_KEY = "N5SG14C1TXZN7917ECQY6KUFW7BEF7M1J3"
 
     private val nodeUrl = "https://eth-mainnet.nodereal.io/v1/${noteKey}"
     private val infuraURL = "https://mainnet.infura.io/v3/1659dfb40aa24bbb8153a677b98064d7"
 
-    private val test = "\"fatal, stand, various, brisk, aisle, object, proof, skull, else, runway, jaguar, unique\""
+    private val test =
+        "\"fatal, stand, various, brisk, aisle, object, proof, skull, else, runway, jaguar, unique\""
 
     /**
      * [police, country, actual, grief, electric, flat, scan, shadow, tip, skate, boil, begin]
      *
      */
     private val testHome = ""
-    // 创建Web3j实例
-    private val web3: Web3j = Web3j.build(HttpService(nodeUrl))
+
+    private var netWorkUrl = nodeUrl
+
+    private lateinit var web3: Web3j
+
+    init {
+        runBlocking {
+            netWorkRepository.getCurrentNetwork().collect {
+                var url = ""
+                if (it != null) {
+                    url = it.rpcUrl + AESCryptoUtils.decrypt(it.apiKey)
+                }
+                netWorkUrl = url.ifBlank { nodeUrl }
+                web3 = Web3j.build(HttpService(netWorkUrl))
+            }
+        }
+    }
+
+    /**
+     * 检查当前网络是否是创建的网络请求
+     */
+    private fun checkNetWork(current: NetworkInfo?) {
+        if (current == null) {
+            return
+        }
+        val url = current.rpcUrl + AESCryptoUtils.decrypt(current.apiKey)
+        if (url == netWorkUrl) {
+            return
+        }
+        netWorkUrl = url
+        web3 = Web3j.build(HttpService(netWorkUrl))
+    }
 
     override fun getWalletList(): Flow<List<String>> {
         return walletStore.getWalletList()
@@ -118,32 +156,42 @@ internal class WalletRepository @Inject constructor(
     }
 
     override fun getMainWalletInfo(): Flow<MainWalletInfoEntity?> {
-        return flow {
-            val walletList = getWalletList().firstOrNull()
-            if (walletList?.isNotEmpty() == true) {
-                val currentAddress = walletList.firstOrNull() ?: ""
-                LogUtils.e("当前地址: $currentAddress" )
-                // 获取ETH余额
-                val walletBalance = getBalance(currentAddress).firstOrNull() ?: BigInteger("0")
-                val balance = convertWeiToEth(walletBalance)
-                val transactions = getTransactions(currentAddress, 5).firstOrNull() ?: emptyList()
-                val ethPrice = 2000.0
-                val ethValue = String.format(Locale.US,"$%.2f", (balance.toDouble() * ethPrice))
-                return@flow emit(
-                    MainWalletInfoEntity(
-                        currentAddress = currentAddress,
-                        walletList = walletList,
-                        balance = String.format(Locale.US, "%.4f", balance),
-                        ethValue = ethValue,
-                        transaction = transactions
-                    )
+        return netWorkRepository.getCurrentNetwork().flatMapLatest { config ->
+            flow {
+                checkNetWork(config)
+                val walletList = getWalletList().firstOrNull()
+                LogUtils.e("揭秘", AESCryptoUtils.encrypt(newNoteKey))
+                LogUtils.e(
+                    "揭秘",
+                    AESCryptoUtils.decrypt("LsJDXqCZUNC0c9kR88R3yy6FiX4ei582AMPuPPWLZbbm0zK3TXhy8FxOXvX/QdUEpn4XSP57QeoFYhpE")
                 )
-            }
-            emit(null)
-        }.catch {
-            it.printStackTrace()
-            emit(null)
-        }.flowOn(Dispatchers.IO)
+                if (walletList?.isNotEmpty() == true) {
+                    val currentAddress = walletList.firstOrNull() ?: ""
+                    LogUtils.e("当前地址: $currentAddress")
+                    // 获取ETH余额
+                    val walletBalance = getBalance(currentAddress).firstOrNull() ?: BigInteger("0")
+                    val balance = convertWeiToEth(walletBalance)
+                    val transactions =
+                        getTransactions(currentAddress, 5).firstOrNull() ?: emptyList()
+                    val ethPrice = 2000.0
+                    val ethValue =
+                        String.format(Locale.US, "$%.2f", (balance.toDouble() * ethPrice))
+                    return@flow emit(
+                        MainWalletInfoEntity(
+                            currentAddress = currentAddress,
+                            walletList = walletList,
+                            balance = String.format(Locale.US, "%.4f", balance),
+                            ethValue = ethValue,
+                            transaction = transactions
+                        )
+                    )
+                }
+                emit(null)
+            }.catch {
+                it.printStackTrace()
+                emit(null)
+            }.flowOn(Dispatchers.IO)
+        }
     }
 
     override fun createWallet(request: CreateWalletRequest): Flow<CreateWalletResult?> = flow {
@@ -188,7 +236,7 @@ internal class WalletRepository @Inject constructor(
         )
         emit(result)
     }.catch {
-        LogUtils.e("创建钱包发生了异常,${it.message}" )
+        LogUtils.e("创建钱包发生了异常,${it.message}")
         emit(null)
     }.flowOn(Dispatchers.IO)
 
@@ -244,7 +292,7 @@ internal class WalletRepository @Inject constructor(
             url = nodeUrl,
             request = request
         )
-        LogUtils.e("NodeReal API 返回的数据: ${response}" )
+        LogUtils.e("NodeReal API 返回的数据: ${response}")
         val transactions = response?.result?.transfers?.map { tx ->
             TransactionModel(
                 hash = tx.hash,
@@ -261,7 +309,7 @@ internal class WalletRepository @Inject constructor(
         emit(transactions)
     }.catch {
         it.printStackTrace()
-        LogUtils.e("获取交易记录失败: ${it.message}" )
+        LogUtils.e("获取交易记录失败: ${it.message}")
         emit(emptyList())
     }.flowOn(Dispatchers.IO)
 
@@ -270,7 +318,7 @@ internal class WalletRepository @Inject constructor(
         val response = coinGeckoApi.getPrice()
         emit(response.ethereum.usd)
     }.catch {
-        LogUtils.e("获取ETH价格失败: ${it.message}" )
+        LogUtils.e("获取ETH价格失败: ${it.message}")
         emit(0.0)
     }.flowOn(Dispatchers.IO)
 
@@ -314,6 +362,7 @@ internal class WalletRepository @Inject constructor(
         val weiInEth = BigDecimal("1000000000000000000") // 10^18
         return BigDecimal(wei).divide(weiInEth)
     }
+
     private fun formatAddress(address: String?): String {
         if (address.isNullOrEmpty()) return ""
         return if (address.length > 10) {

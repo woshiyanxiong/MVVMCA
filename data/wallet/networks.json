@@ -1,0 +1,55 @@
+{
+  "networks": [
+    {
+      "id": "ethereum-mainnet",
+      "name": "Ethereum Mainnet",
+      "rpcUrl": "https://eth-mainnet.nodereal.io/v1/",
+      "apiKey": "YourEncryptedNodeRealKey",
+      "chainId": 1,
+      "currencySymbol": "ETH",
+      "blockExplorerUrl": "https://etherscan.io"
+    },
+    {
+      "id": "bsc-mainnet",
+      "name": "BNB Smart Chain",
+      "rpcUrl": "https://bsc-mainnet.nodereal.io/v1/",
+      "apiKey": "YourEncryptedNodeRealKey",
+      "chainId": 56,
+      "currencySymbol": "BNB",
+      "blockExplorerUrl": "https://bscscan.com"
+    },
+    {
+      "id": "opbnb-mainnet",
+      "name": "opBNB Mainnet",
+      "rpcUrl": "https://opbnb-mainnet.nodereal.io/v1/",
+      "apiKey": "YourEncryptedNodeRealKey",
+      "chainId": 204,
+      "currencySymbol": "BNB",
+      "blockExplorerUrl": "https://opbnbscan.com"
+    }
+  ],
+  "tokens": [
+    {
+      "name": "Tether USD",
+      "symbol": "USDT",
+      "contractAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+      "decimals": 6,
+      "chainId": 1
+    },
+    {
+      "name": "BSC USDT",
+      "symbol": "USDT",
+      "contractAddress": "0x55d398326f99059ff775485246999027b3197955",
+      "decimals": 18,
+      "chainId": 56
+    },
+    {
+      "name": "BSC USDC",
+      "symbol": "USDC",
+      "contractAddress": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+      "decimals": 18,
+      "chainId": 56
+    }
+  ],
+  "appKey": "LsJDXqCZUNC0c9kR88R3yy6FiX4ei582AMPuPPWLZbbm0zK3TXhy8FxOXvX"
+}

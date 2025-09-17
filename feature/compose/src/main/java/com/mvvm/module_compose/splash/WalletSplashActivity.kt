@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.alibaba.android.arouter.launcher.ARouter
 import com.mvvm.module_compose.ComPoseActivity
+import com.mvvm.module_compose.WalletMainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 
@@ -56,9 +57,12 @@ class WalletSplashActivity : ComponentActivity() {
                     if (state.shouldNavigate) {
                         if (state.hasPassword) {
                             // 存在密码，跳转到登录页面
-                            ARouter.getInstance()
-                                .build("/wallet/login")
-                                .navigation()
+//                            ARouter.getInstance()
+//                                .build("/wallet/login")
+//                                .navigation()
+                            startActivity(Intent(this@WalletSplashActivity, WalletMainActivity::class.java))
+
+
                         } else {
                             // 不存在密码，跳转到钱包初始化页面
                             startActivity(Intent(this@WalletSplashActivity, ComPoseActivity::class.java))

@@ -33,7 +33,7 @@ object LogUtils {
     }
 
     fun e(tag: String?, msg: String?) {
-        XLog.e(tag, ""+msg)
+        Log.e(tag, ""+msg)
     }
 
     fun e( msg: String?) {
