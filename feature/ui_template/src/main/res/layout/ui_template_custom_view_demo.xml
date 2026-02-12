@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+<!--  本文件展示了一些自定义控件和我们自己封装的DataBinding的扩展函数用法  -->
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+<!--    项目中使用YuPaoTextView来显示文本   -->
+<!--    textColor、textSize、 ypTv_lineHeightV2是必须设置的   -->
+<!--    ypTv_lineHeightV2用于设置行高    -->
+<!--    ypTv_TextBold用于设置是否加粗    -->
+        <com.yupao.widget.text.YuPaoTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="demo1"
+            android:textColor="@color/black85"
+            android:textSize="16sp"
+            app:ypTv_lineHeightV2="22sp"
+            app:ypTv_TextBold="true"/>
+
+<!--    项目中一些小图标使用IconFontView，icon_src使用的是unicode码，项目中常用的在本模块根目录下的iconFont.json中有定义    -->
+        <com.yupao.widget.text.IconFontView
+            android:id="@+id/iv_show_business"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            app:icon_color="@color/white65"
+            app:icon_size="16dp"
+            app:icon_src="&#xe77e;" />
+
+<!--    项目中的按钮通常不适用button组件，而是使用YuPaoTextView，下面展示一个按钮不带点击态的通用写法    -->
+<!--    cornersRadius是设置圆角，solidColor是设置填充背景色，strokeColor是设置边框色，strokeWidth是设置边框宽度，注意一旦决定使用这四个中的任意一个时，则不能再设置background    -->
+        <com.yupao.widget.text.YuPaoTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="按钮"
+            android:onClick="@{() -> ()}"
+            app:cornersRadius="@{8f}"
+            app:solidColor="@{@color/white}"
+            app:strokeColor="@{@color/colorPrimary}"
+            app:strokeWidth="@{1f}"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</layout>

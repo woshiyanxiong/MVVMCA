@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!--xml使用dataBinding技术，约束布局为根布局，-->
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="us"
+            type="com.yupao.feature.ui_template.fragment_template.ui_state.FragmentUITemplateUS" />
+
+        <variable
+            name="action"
+            type="com.yupao.feature.ui_template.fragment_template.vm.FragmentUITemplateViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvCityTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="16dp"
+            android:text="期望城市"
+            android:textColor="@color/black85"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:ypTv_TextBold="true"
+            app:ypTv_lineHeightV2="24sp" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvEditCity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:onClick="@{() -> action.clickEditCity()}"
+            android:text="编辑"
+            android:textColor="@color/black45"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="@id/tvCityTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvCityTitle"
+            app:ypTv_lineHeightV2="21sp" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvCity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@{uiState.city}"
+            android:textColor="@color/black85"
+            android:textSize="15sp"
+            app:layout_constraintStart_toStartOf="@id/tvCityTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvCityTitle"
+            app:ypTv_lineHeightV2="21sp"
+            tools:text="成都、三亚、齐齐哈尔" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvOccupationTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="期望职位"
+            android:textColor="@color/black85"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="@id/tvCityTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvCity"
+            app:ypTv_TextBold="true"
+            app:ypTv_lineHeightV2="24sp" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvEditOccupation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:onClick="@{() -> action.clickEditOccupation()}"
+            android:text="编辑"
+            android:textColor="@color/black45"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="@id/tvOccupationTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvOccupationTitle"
+            app:ypTv_lineHeightV2="21sp" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvFullTimeOccupationTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="全职期望"
+            android:textColor="@color/black85"
+            android:textSize="15sp"
+            android:visibility="@{uiState.isShowFullTimeOcc ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toStartOf="@id/tvCityTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvOccupationTitle"
+            app:ypTv_TextBold="true"
+            app:ypTv_lineHeightV2="21sp" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvFullTimeOccupation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@{uiState.fullTimeOcc}"
+            android:textSize="15sp"
+            android:visibility="@{uiState.isShowFullTimeOcc ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toStartOf="@id/tvCityTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvFullTimeOccupationTitle"
+            app:ypTv_lineHeightV2="21sp"
+            tools:text="产品经理、电商运营" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvPartTimeOccupationTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="兼职期望"
+            android:textColor="@color/black85"
+            android:textSize="15sp"
+            android:visibility="@{uiState.isShowPartTimeOcc ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toStartOf="@id/tvCityTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvFullTimeOccupation"
+            app:ypTv_TextBold="true"
+            app:ypTv_lineHeightV2="21sp" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvPartTimeOccupation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@{uiState.partTimeOcc}"
+            android:textColor="@color/black85"
+            android:textSize="15sp"
+            android:visibility="@{uiState.isShowPartTimeOcc ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toStartOf="@id/tvCityTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvPartTimeOccupationTitle"
+            app:ypTv_lineHeightV2="21sp"
+            tools:text="产品经理、电商运营、滴滴司机、服务员、外卖员" />
+
+        <com.yupao.widget.text.YuPaoTextView
+            android:id="@+id/tvSubscribeSwitch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"
+            android:onClick="@{() -> action.clickSubscribeSwitch()}"
+            android:paddingVertical="12dp"
+            android:text="@{uiState.subscribeSwitchText}"
+            android:textColor="@color/white"
+            android:textSize="17sp"
+            app:cornersRadius="@{8f}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:solidColor="@{@color/colorPrimary}"
+            app:ypTv_TextBold="true"
+            app:ypTv_lineHeightV2="24sp"
+            tools:background="@color/colorPrimary"
+            tools:text="开启订阅" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
