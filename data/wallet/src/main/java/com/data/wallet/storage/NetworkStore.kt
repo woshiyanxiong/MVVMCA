@@ -61,6 +61,6 @@ class NetworkStore @Inject constructor(
      * 获取当前选中的网络ID
      */
     fun getCurrentNetworkId(): Flow<String> {
-        return networkStore.getData(context, currentNetworkKey, defaultNetworkId)
+        return networkStore.getData(context, currentNetworkKey, defaultNetworkId).map { it ?: defaultNetworkId }
     }
 }

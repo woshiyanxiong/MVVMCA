@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.HDKeyDerivation
@@ -68,20 +67,7 @@ internal class WalletRepository @Inject constructor(
 
     private var netWorkUrl = nodeUrl
 
-    private lateinit var web3: Web3j
-
-    init {
-        runBlocking {
-            netWorkRepository.getCurrentNetwork().collect {
-                var url = ""
-                if (it != null) {
-                    url = it.rpcUrl + AESCryptoUtils.decrypt(it.apiKey)
-                }
-                netWorkUrl = url.ifBlank { nodeUrl }
-                web3 = Web3j.build(HttpService(netWorkUrl))
-            }
-        }
-    }
+    private var web3: Web3j = Web3j.build(HttpService(nodeUrl))
 
     /**
      * 检查当前网络是否是创建的网络请求

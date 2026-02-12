@@ -1,6 +1,8 @@
 package com.data.wallet.di
 
+import com.data.wallet.repo.INetworkRepository
 import com.data.wallet.repo.IWalletRepository
+import com.data.wallet.repo.impl.NetworkRepository
 import com.data.wallet.repo.impl.WalletRepository
 import dagger.Binds
 import dagger.Module
@@ -12,4 +14,7 @@ import dagger.hilt.components.SingletonComponent
 internal interface WalletDataModule {
     @Binds
     fun providesWalletRepository(walletRepository: WalletRepository): IWalletRepository
+    
+    @Binds
+    fun providesNetworkRepository(networkRepository: NetworkRepository): INetworkRepository
 }

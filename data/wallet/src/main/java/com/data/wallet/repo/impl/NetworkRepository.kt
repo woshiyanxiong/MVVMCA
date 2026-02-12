@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -27,9 +28,7 @@ internal class NetworkRepository @Inject constructor(
     
     override fun getCurrentNetwork(): Flow<NetworkInfo?> {
         return getCurrentNetworkId().map { networkId ->
-            networkStore.getNetworks().map { networks ->
-                networks.find { it.id == networkId }
-            }
+            networkStore.getNetworks().first().find { it.id == networkId }
         }.catch {
             LogUtils.e("获取当前网络失败: ${it.message}")
             emit(null)
@@ -69,7 +68,7 @@ internal class NetworkRepository @Inject constructor(
     override suspend fun switchNetwork(networkId: String): Boolean {
         return try {
             networkStore.saveCurrentNetworkId(networkId)
-            LogUtils.d("切换网络成功: $networkId")
+            LogUtils.d("切换网络成功:","$networkId")
             true
         } catch (e: Exception) {
             LogUtils.e("切换网络失败: ${e.message}")
@@ -79,5 +78,9 @@ internal class NetworkRepository @Inject constructor(
     
     override fun getCurrentNetworkId(): Flow<String> {
         return networkStore.getCurrentNetworkId()
+    }
+
+    override suspend fun initNetWork() {
+
     }
 }

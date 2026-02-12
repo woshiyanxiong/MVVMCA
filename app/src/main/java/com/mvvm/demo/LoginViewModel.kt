@@ -4,7 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.component.ext.loadMap
-import com.component.ext.mapSuccess
+import com.ca.protocol.result.handle
 import com.camine.entity.LoginBeanData
 import com.camine.repository.UserRepository
 import com.component.uiStatus.IStatusView
@@ -37,10 +37,16 @@ class LoginViewModel @Inject constructor(
 
     fun login(name: String, pwd: String) {
         viewModelScope.launch {
-            repository.login(name, pwd).loadMap(statusView).mapSuccess {
-                _userInfo.value = it
-                _loginSuccess.value = true
-            }
+            repository.login(name, pwd)
+                .loadMap(statusView)
+                .collect { data ->
+                    data.handle(
+                        success = {
+                            _userInfo.value = it.data
+                            _loginSuccess.value = true
+                        }
+                    )
+                }
         }
 
     }
