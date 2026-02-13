@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.data.wallet.model.ImportWalletRequest
+import com.data.wallet.repo.IAccountRepository
 import com.data.wallet.repo.IWalletRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -39,6 +40,7 @@ data class WalletImportState(
 @HiltViewModel
 class WalletImportViewModel @Inject constructor(
     private val walletRepository: IWalletRepository,
+    private val accountRepository: IAccountRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
     
@@ -100,15 +102,21 @@ class WalletImportViewModel @Inject constructor(
                 .catch { 
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = "导入失败: ${it.message}"
+                        error = "导入失败: ${it.message}",
+                        isSuccess = false
                     )
                 }
                 .collect {
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        isSuccess = true,
-                        error = null
-                    )
+                    // 保存钱包密码
+                    accountRepository.saveWalletPassword(currentState.password)
+                        .catch { /* 忽略密码保存错误 */ }
+                        .collect { }
+                    
+//                    _state.value = _state.value.copy(
+//                        isLoading = false,
+//                        isSuccess = true,
+//                        error = null
+//                    )
                 }
         }
     }

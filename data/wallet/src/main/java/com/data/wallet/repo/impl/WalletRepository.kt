@@ -76,12 +76,17 @@ internal class WalletRepository @Inject constructor(
         if (current == null) {
             return
         }
-        val url = current.rpcUrl + AESCryptoUtils.decrypt(current.apiKey)
-        if (url == netWorkUrl) {
-            return
+        try {
+            val url = current.rpcUrl + AESCryptoUtils.decrypt(current.apiKey)
+            if (url == netWorkUrl) {
+                return
+            }
+            netWorkUrl = url
+            web3 = Web3j.build(HttpService(netWorkUrl))
+        } catch (e: Exception) {
+            LogUtils.e("解密 apiKey 失败: ${e.message}")
+            // 使用默认 nodeUrl
         }
-        netWorkUrl = url
-        web3 = Web3j.build(HttpService(netWorkUrl))
     }
 
     override fun getWalletList(): Flow<List<String>> {
@@ -146,11 +151,6 @@ internal class WalletRepository @Inject constructor(
             flow {
                 checkNetWork(config)
                 val walletList = getWalletList().firstOrNull()
-                LogUtils.e("揭秘", AESCryptoUtils.encrypt(newNoteKey))
-                LogUtils.e(
-                    "揭秘",
-                    AESCryptoUtils.decrypt("LsJDXqCZUNC0c9kR88R3yy6FiX4ei582AMPuPPWLZbbm0zK3TXhy8FxOXvX/QdUEpn4XSP57QeoFYhpE")
-                )
                 if (walletList?.isNotEmpty() == true) {
                     val currentAddress = walletList.firstOrNull() ?: ""
                     LogUtils.e("当前地址: $currentAddress")
