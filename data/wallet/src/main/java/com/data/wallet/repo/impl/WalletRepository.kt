@@ -93,6 +93,42 @@ internal class WalletRepository @Inject constructor(
         return walletStore.getWalletList()
     }
 
+    override fun sendTransaction(toAddress: String, amount: String, password: String): Flow<String?> = flow {
+        try {
+            // 1. 获取当前钱包地址
+            val currentAddress = walletStore.getCurrentWalletAddress().firstOrNull()
+            if (currentAddress.isNullOrBlank()) {
+                LogUtils.e("sendTransaction", "当前钱包地址为空")
+                emit(null)
+                return@flow
+            }
+
+            // 2. 获取钱包文件名
+            val walletFileName = walletStore.getWalletFileName(currentAddress).firstOrNull()
+            if (walletFileName.isNullOrBlank()) {
+                LogUtils.e("sendTransaction", "钱包文件名为空")
+                emit(null)
+                return@flow
+            }
+
+            // 3. 加载钱包凭证
+            val walletFilePath = "${walletStore.getWalletDir()}/$walletFileName"
+            val credentials = loadWalletFromFile(password, walletFilePath)
+            
+            LogUtils.e("sendTransaction", "开始发送交易: from=${credentials.address}, to=$toAddress, amount=$amount ETH")
+
+            // 4. 发送交易
+            val txHash = sendTransaction(credentials, toAddress, BigDecimal(amount))
+            
+            LogUtils.e("sendTransaction", "交易成功: txHash=$txHash")
+            emit(txHash)
+        } catch (e: Exception) {
+            LogUtils.e("sendTransaction", "交易失败: ${e.message}")
+            e.printStackTrace()
+            emit(null)
+        }
+    }.flowOn(Dispatchers.IO)
+
 
     // 创建新钱包
     suspend fun createWallet(password: String, walletDir: String): String =

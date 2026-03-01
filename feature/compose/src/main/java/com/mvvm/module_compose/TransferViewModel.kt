@@ -3,6 +3,7 @@ package com.mvvm.module_compose
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.component.ext.signalFlow
+import com.data.wallet.repo.IAccountRepository
 import com.data.wallet.repo.IWalletRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,17 +25,42 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class TransferViewModel @Inject constructor(
-    private val walletRepository: IWalletRepository
+    private val walletRepository: IWalletRepository,
+    private val accountRepository: IAccountRepository
 ) : ViewModel() {
     
     /** 收款地址输入流 */
     private val _addressUpdate = signalFlow<String>()
     /** 转账金额输入流 */
     private val _amountUpdate = signalFlow<String>()
+    /** 实际余额流 */
+    private val _balanceFlow = signalFlow<String>()
     
     /** 转账成功事件流 */
     private val _transferSuccessEvent = MutableSharedFlow<Unit>()
     val transferSuccessEvent: SharedFlow<Unit> = _transferSuccessEvent.asSharedFlow()
+    
+    /** 转账错误事件流 */
+    private val _transferErrorEvent = MutableSharedFlow<String>()
+    val transferErrorEvent: SharedFlow<String> = _transferErrorEvent.asSharedFlow()
+    
+    init {
+        // 初始化时加载余额
+        loadBalance()
+    }
+    
+    /**
+     * 加载钱包余额
+     */
+    private fun loadBalance() {
+        viewModelScope.launch {
+            walletRepository.getMainWalletInfo().collect { info ->
+                info?.balance?.let { balance ->
+                    _balanceFlow.emit(balance)
+                }
+            }
+        }
+    }
     
     /**
      * 转账页面的UI状态
@@ -41,17 +68,18 @@ class TransferViewModel @Inject constructor(
      */
     val state: StateFlow<TransferState> = combine(
         _addressUpdate.onStart { emit("") },
-        _amountUpdate.onStart { emit("") }
-    ) { address, amount ->
+        _amountUpdate.onStart { emit("") },
+        _balanceFlow.onStart { emit("0.0") }
+    ) { address, amount, balance ->
         val addressError = validateAddress(address)
-        val amountError = validateAmount(amount)
+        val amountError = validateAmount(amount, balance)
         val isValid = addressError == null && amountError == null && 
                      address.isNotEmpty() && amount.isNotEmpty()
         
         TransferState(
             toAddress = address,
             amount = amount,
-            balance = "1.5", // TODO: 从钱包获取实际余额
+            balance = balance,
             addressError = addressError,
             amountError = amountError,
             isValid = isValid,
@@ -81,18 +109,34 @@ class TransferViewModel @Inject constructor(
      */
     fun transfer() {
         val currentState = state.value
-        if (currentState.isValid) {
-            viewModelScope.launch {
-//                walletRepository.sendTransaction(
-//                    toAddress = currentState.toAddress,
-//                    amount = currentState.amount
-//                ).collect { txHash ->
-//                    if (txHash != null) {
-//                        _transferSuccessEvent.emit(Unit)
-//                    } else {
-//                        // TODO: 处理转账失败
-//                    }
-//                }
+        if (!currentState.isValid) {
+            return
+        }
+        
+        viewModelScope.launch {
+            try {
+                // 从本地获取钱包密码
+                val password = accountRepository.getWalletPassword().firstOrNull()
+                if (password.isNullOrBlank()) {
+                    _transferErrorEvent.emit("未找到钱包密码，请先设置密码")
+                    return@launch
+                }
+                
+                walletRepository.sendTransaction(
+                    toAddress = currentState.toAddress,
+                    amount = currentState.amount,
+                    password = password
+                ).collect { txHash ->
+                    if (txHash != null) {
+                        // 转账成功
+                        _transferSuccessEvent.emit(Unit)
+                    } else {
+                        // 转账失败
+                        _transferErrorEvent.emit("转账失败，请检查网络连接或稍后重试")
+                    }
+                }
+            } catch (e: Exception) {
+                _transferErrorEvent.emit("转账异常: ${e.message}")
             }
         }
     }
@@ -115,17 +159,19 @@ class TransferViewModel @Inject constructor(
     /**
      * 验证转账金额
      * @param amount 待验证的金额
+     * @param balance 当前余额
      * @return 错误信息，null表示验证通过
      */
-    private fun validateAmount(amount: String): String? {
+    private fun validateAmount(amount: String, balance: String): String? {
         return when {
             amount.isEmpty() -> null
             else -> {
                 try {
                     val value = BigDecimal(amount)
+                    val balanceValue = BigDecimal(balance)
                     when {
                         value <= BigDecimal.ZERO -> "金额必须大于0"
-                        value > BigDecimal("1.5") -> "余额不足" // TODO: 使用实际余额
+                        value > balanceValue -> "余额不足"
                         else -> null
                     }
                 } catch (e: Exception) {

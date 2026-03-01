@@ -98,6 +98,13 @@ class WalletStore @Inject constructor(
     }
 
     /**
+     * 获取钱包文件存储目录
+     */
+    fun getWalletDir(): String {
+        return context.filesDir.absolutePath
+    }
+
+    /**
      * 删除钱包
      */
     suspend fun removeWallet(address: String) {

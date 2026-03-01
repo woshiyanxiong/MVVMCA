@@ -43,7 +43,16 @@ class TransferActivity : ComponentActivity() {
         // 监听转账成功事件
         lifecycleScope.launch {
             viewModel.transferSuccessEvent.collect {
+                // TODO: 可以显示成功提示
                 finish()
+            }
+        }
+        
+        // 监听转账错误事件
+        lifecycleScope.launch {
+            viewModel.transferErrorEvent.collect { errorMsg ->
+                // TODO: 显示错误提示，可以使用 Toast 或 Snackbar
+                // Toast.makeText(this@TransferActivity, errorMsg, Toast.LENGTH_LONG).show()
             }
         }
         

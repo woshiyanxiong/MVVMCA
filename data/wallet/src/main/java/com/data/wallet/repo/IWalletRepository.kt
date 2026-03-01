@@ -18,7 +18,14 @@ data class CreateWalletResult(
 interface IWalletRepository {
     fun getWalletList(): Flow<List<String>>
 
-//    fun sendTransaction()
+    /**
+     * 发送转账交易
+     * @param toAddress 收款地址
+     * @param amount 转账金额（ETH）
+     * @param password 钱包密码
+     * @return 交易哈希，null表示失败
+     */
+    fun sendTransaction(toAddress: String, amount: String, password: String): Flow<String?>
 
     /**
      * 获取当前信息
