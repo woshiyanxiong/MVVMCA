@@ -287,7 +287,6 @@ fun TransactionItem(transaction: TransactionUIState) {
         modifier = Modifier
             .fillMaxWidth()
             .height(50.dp)
-            .background(color = Color.Red)
             .clickable { },
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -362,7 +361,11 @@ fun TransactionItem(transaction: TransactionUIState) {
 // 辅助函数
 fun convertWeiToEth(wei: String): String {
     return try {
-        val weiValue = java.math.BigInteger(wei)
+        val weiValue = if (wei.startsWith("0x") || wei.startsWith("0X")) {
+            java.math.BigInteger(wei.removePrefix("0x").removePrefix("0X"), 16)
+        } else {
+            java.math.BigInteger(wei)
+        }
         val ethValue = java.math.BigDecimal(weiValue).divide(java.math.BigDecimal("1000000000000000000"))
         String.format("%.6f", ethValue)
     } catch (e: Exception) {
