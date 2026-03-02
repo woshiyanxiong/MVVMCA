@@ -6,6 +6,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.io.File
 import javax.inject.Inject
 
 /**
@@ -101,7 +102,9 @@ class WalletStore @Inject constructor(
      * 获取钱包文件存储目录
      */
     fun getWalletDir(): String {
-        return context.filesDir.absolutePath
+        val dir = File(context.filesDir, "wallets")
+        if (!dir.exists()) dir.mkdirs()
+        return dir.absolutePath
     }
 
     /**

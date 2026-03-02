@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.data.wallet.model.ImportWalletRequest
 import com.data.wallet.repo.IAccountRepository
 import com.data.wallet.repo.IWalletRepository
+import com.mvvm.logcat.LogUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
@@ -99,7 +100,8 @@ class WalletImportViewModel @Inject constructor(
             )
             
             walletRepository.importWalletFromMnemonic(request)
-                .catch { 
+                .catch {
+                    LogUtils.e("导入失败","${it.message}")
                     _state.value = _state.value.copy(
                         isLoading = false,
                         error = "导入失败: ${it.message}",
@@ -112,11 +114,11 @@ class WalletImportViewModel @Inject constructor(
                         .catch { /* 忽略密码保存错误 */ }
                         .collect { }
                     
-//                    _state.value = _state.value.copy(
-//                        isLoading = false,
-//                        isSuccess = true,
-//                        error = null
-//                    )
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        isSuccess = true,
+                        error = null
+                    )
                 }
         }
     }

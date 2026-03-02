@@ -8,6 +8,7 @@ import com.data.wallet.storage.WalletStore
 import com.mvvm.logcat.LogUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import org.web3j.crypto.Credentials
@@ -297,13 +298,13 @@ internal class SwapRepository @Inject constructor(
      */
     private suspend fun loadWalletCredentials(password: String): Credentials? {
         return try {
-            val currentAddress = walletStore.getCurrentWalletAddress().kotlinx.coroutines.flow.firstOrNull()
+            val currentAddress = walletStore.getCurrentWalletAddress().firstOrNull()
             if (currentAddress.isNullOrBlank()) {
                 LogUtils.e("SwapRepository", "当前钱包地址为空")
                 return null
             }
             
-            val walletFileName = walletStore.getWalletFileName(currentAddress).kotlinx.coroutines.flow.firstOrNull()
+            val walletFileName = walletStore.getWalletFileName(currentAddress).firstOrNull()
             if (walletFileName.isNullOrBlank()) {
                 LogUtils.e("SwapRepository", "钱包文件名为空")
                 return null

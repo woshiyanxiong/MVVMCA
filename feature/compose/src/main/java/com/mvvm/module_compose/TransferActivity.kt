@@ -1,12 +1,12 @@
 package com.mvvm.module_compose
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alibaba.android.arouter.facade.annotation.Route
-import kotlinx.coroutines.launch
+import com.mvvm.module_compose.transfer.TransferConfirmActivity
 
 @AndroidEntryPoint
 @Route(path = "/wallet/transfer")
@@ -40,22 +40,6 @@ class TransferActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // 监听转账成功事件
-        lifecycleScope.launch {
-            viewModel.transferSuccessEvent.collect {
-                // TODO: 可以显示成功提示
-                finish()
-            }
-        }
-        
-        // 监听转账错误事件
-        lifecycleScope.launch {
-            viewModel.transferErrorEvent.collect { errorMsg ->
-                // TODO: 显示错误提示，可以使用 Toast 或 Snackbar
-                // Toast.makeText(this@TransferActivity, errorMsg, Toast.LENGTH_LONG).show()
-            }
-        }
-        
         setContent {
             MaterialTheme {
                 val state = viewModel.state.collectAsStateWithLifecycle()
@@ -63,7 +47,16 @@ class TransferActivity : ComponentActivity() {
                     state = state.value,
                     onAddressChange = viewModel::updateAddress,
                     onAmountChange = viewModel::updateAmount,
-                    onTransfer = viewModel::transfer,
+                    onTransfer = {
+                        val s = viewModel.state.value
+                        if (s.isValid) {
+                            val intent = Intent(this@TransferActivity, TransferConfirmActivity::class.java)
+                            intent.putExtra("toAddress", s.toAddress)
+                            intent.putExtra("amount", s.amount)
+                            intent.putExtra("balance", s.balance)
+                            startActivity(intent)
+                        }
+                    },
                     onBack = { finish() }
                 )
             }

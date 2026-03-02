@@ -95,8 +95,12 @@ internal class WalletRepository @Inject constructor(
 
     override fun sendTransaction(toAddress: String, amount: String, password: String): Flow<String?> = flow {
         try {
+            // 0. 同步当前网络配置
+            val currentNetwork = netWorkRepository.getCurrentNetwork().firstOrNull()
+            checkNetWork(currentNetwork)
+
             // 1. 获取当前钱包地址
-            val currentAddress = walletStore.getCurrentWalletAddress().firstOrNull()
+            val currentAddress = walletStore.getWalletList().firstOrNull()?.firstOrNull()
             if (currentAddress.isNullOrBlank()) {
                 LogUtils.e("sendTransaction", "当前钱包地址为空")
                 emit(null)
@@ -115,7 +119,7 @@ internal class WalletRepository @Inject constructor(
             val walletFilePath = "${walletStore.getWalletDir()}/$walletFileName"
             val credentials = loadWalletFromFile(password, walletFilePath)
             
-            LogUtils.e("sendTransaction", "开始发送交易: from=${credentials.address}, to=$toAddress, amount=$amount ETH")
+            LogUtils.e("sendTransaction", "开始发送交易: from=${credentials.address}, to=$toAddress, amount=$amount ETH, rpc=$netWorkUrl")
 
             // 4. 发送交易
             val txHash = sendTransaction(credentials, toAddress, BigDecimal(amount))
@@ -153,28 +157,51 @@ internal class WalletRepository @Inject constructor(
         web3.ethBlockNumber().send().blockNumber
     }
 
-    // 发送交易
+    // 发送交易 (EIP-1559)
     suspend fun sendTransaction(
         credentials: Credentials,
         toAddress: String,
         amount: BigDecimal
-    ): String = withContext(Dispatchers.IO) {
+    ): String? = withContext(Dispatchers.IO) {
         val nonce = web3.ethGetTransactionCount(
-            credentials.address, DefaultBlockParameterName.LATEST
+            credentials.address, DefaultBlockParameterName.PENDING
         ).send().transactionCount
 
-        val gasPrice = web3.ethGasPrice().send().gasPrice
+        // 获取最新区块的 baseFee
+        val latestBlock = web3.ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false).send().block
+        val baseFee = latestBlock.baseFeePerGas
+
+        // maxPriorityFeePerGas: 给矿工的小费，2 Gwei 是常用值
+        val maxPriorityFee = BigInteger.valueOf(2_000_000_000L) // 2 Gwei
+
+        // maxFeePerGas: baseFee * 2 + 小费，留足空间应对 baseFee 波动
+        val maxFeePerGas = baseFee.multiply(BigInteger.TWO).add(maxPriorityFee)
+
         val gasLimit = BigInteger.valueOf(21000)
         val value = Convert.toWei(amount, Convert.Unit.ETHER).toBigInteger()
+        val chainId = 1L // ETH 主网
 
-        val rawTransaction = RawTransaction.createEtherTransaction(
-            nonce, gasPrice, gasLimit, toAddress, value
+        val rawTransaction = RawTransaction.createTransaction(
+            chainId,
+            nonce,
+            gasLimit,
+            toAddress,
+            value,
+            "",
+            maxPriorityFee,
+            maxFeePerGas
         )
 
-        val signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials)
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, chainId, credentials)
         val hexValue = Numeric.toHexString(signedMessage)
 
-        web3.ethSendRawTransaction(hexValue).send().transactionHash
+        val response = web3.ethSendRawTransaction(hexValue).send()
+        if (response.hasError()) {
+            LogUtils.e("sendTransaction", "节点返回错误: ${response.error.message}")
+            null
+        } else {
+            response.transactionHash
+        }
     }
 
     // 验证地址格式
@@ -198,6 +225,7 @@ internal class WalletRepository @Inject constructor(
                     val ethPrice = 2000.0
                     val ethValue =
                         String.format(Locale.US, "$%.2f", (balance.toDouble() * ethPrice))
+                    LogUtils.e("当前地址", currentAddress)
                     return@flow emit(
                         MainWalletInfoEntity(
                             currentAddress = currentAddress,
@@ -264,6 +292,8 @@ internal class WalletRepository @Inject constructor(
 
     override fun importWalletFromMnemonic(request: ImportWalletRequest): Flow<CreateWalletResult> =
         flow {
+            if (!request.walletDir.exists()) request.walletDir.mkdirs()
+
             val credentials = createCredentialsFromMnemonic(request.mnemonic)
 
             val walletFileName = WalletUtils.generateWalletFile(
@@ -282,7 +312,7 @@ internal class WalletRepository @Inject constructor(
                 walletFileName = walletFileName
             )
             emit(result)
-        }
+        }.flowOn(Dispatchers.IO)
 
     override fun getBalance(address: String): Flow<BigInteger?> {
         return flow {

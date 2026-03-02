@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
+import com.mvvm.module_compose.TokenInfo
 import javax.inject.Inject
 
 /**
@@ -75,7 +76,7 @@ class SwapViewModel @Inject constructor(
         _swapTokensFlag.onStart { emit(false) }
     ) { fromAmount, balances, isSwapped ->
         // 根据交换标志决定代币方向
-        val (fromToken, toToken, fromBalance, toBalance) = if (isSwapped) {
+        val tokenPair = if (isSwapped) {
             Pair(
                 TokenInfo("USDT", "Tether USD", "0xdac17f958d2ee523a2206206994597c13d831ec7"),
                 TokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000")
@@ -86,6 +87,10 @@ class SwapViewModel @Inject constructor(
                 TokenInfo("USDT", "Tether USD", "0xdac17f958d2ee523a2206206994597c13d831ec7")
             ) to Pair(balances.ethBalance, balances.usdtBalance)
         }
+        val fromToken = tokenPair.first.first
+        val toToken = tokenPair.first.second
+        val fromBalance = tokenPair.second.first
+        val toBalance = tokenPair.second.second
         
         // 计算兑换金额和相关信息
         val (toAmount, exchangeRate, minimumReceived, networkFee) = calculateSwapInfo(

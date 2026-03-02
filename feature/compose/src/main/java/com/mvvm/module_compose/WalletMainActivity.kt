@@ -161,7 +161,7 @@ fun WalletMainScreen(
                     QuickActionButton(
                         iconRes = R.drawable.ic_send,
                         text = "转账",
-                        onClick = { }
+                        onClick = { WalletNavigator.navigateToTransfer(context) }
                     )
                     QuickActionButton(
                         iconRes = R.drawable.ic_receive,

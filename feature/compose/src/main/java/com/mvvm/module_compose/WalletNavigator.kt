@@ -40,4 +40,13 @@ object WalletNavigator {
             .build("/wallet/account")
             .navigation(context)
     }
+
+    /**
+     * 跳转到转账页面
+     */
+    fun navigateToTransfer(context: Context) {
+        ARouter.getInstance()
+            .build("/wallet/transfer")
+            .navigation(context)
+    }
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.component.ext.signalFlow
 import com.data.wallet.model.CreateWalletRequest
+import com.data.wallet.repo.IAccountRepository
 import com.data.wallet.repo.IWalletRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.io.File
@@ -36,7 +38,8 @@ data class MnemonicWarningState(
 @Deprecated("不用这个")
 class MnemonicWarningViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val walletRepository: IWalletRepository
+    private val walletRepository: IWalletRepository,
+    private val accountRepository: IAccountRepository
 ) : ViewModel() {
     
     private val _state = MutableStateFlow(MnemonicWarningState())
@@ -76,9 +79,10 @@ class MnemonicWarningViewModel @Inject constructor(
                     if (!walletDir.exists()) walletDir.mkdirs()
 
                     // 创建钱包请求
+                    val savedPassword = accountRepository.getWalletPassword().firstOrNull()
                     val request = CreateWalletRequest(
                         walletName = "我的钱包",
-                        password = "temp_password", // 使用之前创建的密码
+                        password = savedPassword ?: "default_password",
                         walletDir = walletDir
                     )
 
