@@ -5,6 +5,7 @@ import com.data.wallet.model.Wallet
 import com.data.wallet.model.CreateWalletRequest
 import com.data.wallet.model.ImportWalletRequest
 import com.data.wallet.model.TransactionModel
+import com.data.wallet.entity.TokenBalanceEntity
 import org.web3j.crypto.Credentials
 import kotlinx.coroutines.flow.Flow
 import java.math.BigInteger
@@ -48,4 +49,7 @@ interface IWalletRepository {
     
     // 获取ETH价格
     fun getEthPrice(): Flow<Double?>
+
+    // 获取地址下所有代币余额（通过 Alchemy）
+    fun getTokenBalances(address: String): Flow<List<TokenBalanceEntity>>
 }

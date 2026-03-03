@@ -45,7 +45,9 @@ object Net {
         val headerInterceptor = Interceptor { chain ->
             val builder = chain.request().newBuilder()
             //请求头携token
-            builder.addHeader("Authorization", "")
+//            builder.addHeader("Authorization", "")
+            builder.addHeader("accept", "application/json")
+            builder.addHeader("content-type", "application/json")
             chain.proceed(builder.build())
         }
         val okhttpBuilder = OkHttpClient.Builder()

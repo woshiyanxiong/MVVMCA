@@ -2,6 +2,9 @@ package com.data.wallet.repo.impl
 
 import AESCryptoUtils
 import android.util.Log
+import com.data.wallet.api.AlchemyApi
+import com.data.wallet.entity.AlchemyTokenBalanceRequest
+import com.data.wallet.entity.AlchemyTokenMetadataRequest
 import com.data.wallet.api.CoinGeckoApi
 import com.data.wallet.api.NodeRealApi
 import com.data.wallet.api.NodeRealRequest
@@ -11,10 +14,12 @@ import com.data.wallet.model.CreateWalletRequest
 import com.data.wallet.model.ImportWalletRequest
 import com.data.wallet.model.NetworkInfo
 import com.data.wallet.model.TransactionModel
+import com.data.wallet.entity.TokenBalanceEntity
 import com.data.wallet.repo.CreateWalletResult
 import com.data.wallet.repo.INetworkRepository
 import com.data.wallet.repo.IWalletRepository
 import com.data.wallet.storage.WalletStore
+import com.google.gson.Gson
 import com.mvvm.logcat.LogUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -47,11 +52,13 @@ internal class WalletRepository @Inject constructor(
     private val walletStore: WalletStore,
     private val apiService: NodeRealApi,
     private val coinGeckoApi: CoinGeckoApi,
+    private val alchemyApi: AlchemyApi,
     private val netWorkRepository: INetworkRepository
 ) : IWalletRepository {
     private val noteKey = "54f700c58aeb4d2fb2620b817759894e"
     private val newNoteKey = "dba7fde082124c78b2809090d48bd69a"
     private val ETH_API_KEY = "N5SG14C1TXZN7917ECQY6KUFW7BEF7M1J3"
+    private val ALCHEMY_URL = "https://eth-mainnet.g.alchemy.com/v2/nUELTIlKKB-hJR3k6X3FN"
 
     private val nodeUrl = "https://eth-mainnet.nodereal.io/v1/${noteKey}"
     private val infuraURL = "https://mainnet.infura.io/v3/1659dfb40aa24bbb8153a677b98064d7"
@@ -94,43 +101,41 @@ internal class WalletRepository @Inject constructor(
     }
 
     override fun sendTransaction(toAddress: String, amount: String, password: String): Flow<String?> = flow {
-        try {
-            // 0. 同步当前网络配置
-            val currentNetwork = netWorkRepository.getCurrentNetwork().firstOrNull()
-            checkNetWork(currentNetwork)
+        // 0. 同步当前网络配置
+        val currentNetwork = netWorkRepository.getCurrentNetwork().firstOrNull()
+        checkNetWork(currentNetwork)
 
-            // 1. 获取当前钱包地址
-            val currentAddress = walletStore.getWalletList().firstOrNull()?.firstOrNull()
-            if (currentAddress.isNullOrBlank()) {
-                LogUtils.e("sendTransaction", "当前钱包地址为空")
-                emit(null)
-                return@flow
-            }
-
-            // 2. 获取钱包文件名
-            val walletFileName = walletStore.getWalletFileName(currentAddress).firstOrNull()
-            if (walletFileName.isNullOrBlank()) {
-                LogUtils.e("sendTransaction", "钱包文件名为空")
-                emit(null)
-                return@flow
-            }
-
-            // 3. 加载钱包凭证
-            val walletFilePath = "${walletStore.getWalletDir()}/$walletFileName"
-            val credentials = loadWalletFromFile(password, walletFilePath)
-            
-            LogUtils.e("sendTransaction", "开始发送交易: from=${credentials.address}, to=$toAddress, amount=$amount ETH, rpc=$netWorkUrl")
-
-            // 4. 发送交易
-            val txHash = sendTransaction(credentials, toAddress, BigDecimal(amount))
-            
-            LogUtils.e("sendTransaction", "交易成功: txHash=$txHash")
-            emit(txHash)
-        } catch (e: Exception) {
-            LogUtils.e("sendTransaction", "交易失败: ${e.message}")
-            e.printStackTrace()
+        // 1. 获取当前钱包地址
+        val currentAddress = walletStore.getWalletList().firstOrNull()?.firstOrNull()
+        if (currentAddress.isNullOrBlank()) {
+            LogUtils.e("sendTransaction", "当前钱包地址为空")
             emit(null)
+            return@flow
         }
+
+        // 2. 获取钱包文件名
+        val walletFileName = walletStore.getWalletFileName(currentAddress).firstOrNull()
+        if (walletFileName.isNullOrBlank()) {
+            LogUtils.e("sendTransaction", "钱包文件名为空")
+            emit(null)
+            return@flow
+        }
+
+        // 3. 加载钱包凭证
+        val walletFilePath = "${walletStore.getWalletDir()}/$walletFileName"
+        val credentials = loadWalletFromFile(password, walletFilePath)
+        
+        LogUtils.e("sendTransaction", "开始发送交易: from=${credentials.address}, to=$toAddress, amount=$amount ETH, rpc=$netWorkUrl")
+
+        // 4. 发送交易
+        val txHash = sendTransaction(credentials, toAddress, BigDecimal(amount))
+        
+        LogUtils.e("sendTransaction", "交易成功: txHash=$txHash")
+        emit(txHash)
+    }.catch {
+        LogUtils.e("sendTransaction", "交易失败: ${it.message}")
+        it.printStackTrace()
+        emit(null)
     }.flowOn(Dispatchers.IO)
 
 
@@ -217,6 +222,8 @@ internal class WalletRepository @Inject constructor(
                 if (walletList?.isNotEmpty() == true) {
                     val currentAddress = walletList.firstOrNull() ?: ""
                     LogUtils.e("当前地址: $currentAddress")
+                    val test = getTokenBalances(currentAddress).firstOrNull()
+                    LogUtils.e("聚合","${Gson().toJson(test)}")
                     // 获取ETH余额
                     val walletBalance = getBalance(currentAddress).firstOrNull() ?: BigInteger("0")
                     val balance = convertWeiToEth(walletBalance)
@@ -423,4 +430,53 @@ internal class WalletRepository @Inject constructor(
             address
         }
     }
+
+    override fun getTokenBalances(address: String): Flow<List<TokenBalanceEntity>> = flow {
+        val request = AlchemyTokenBalanceRequest(
+            params = listOf(address, "erc20")
+        )
+        val response = alchemyApi.getTokenBalances(ALCHEMY_URL, request)
+        val tokenBalances = response?.result?.tokenBalances
+        if (tokenBalances.isNullOrEmpty()) {
+            emit(emptyList())
+            return@flow
+        }
+
+        // 过滤掉余额为0的代币
+        val nonZeroTokens = tokenBalances.filter { token ->
+            val balance = token.tokenBalance ?: "0x0"
+            balance != "0x0" && balance != "0x" && balance != "0"
+        }
+
+        // 查询每个代币的元数据
+        val result = nonZeroTokens.mapNotNull { token ->
+            try {
+                val metaRequest = AlchemyTokenMetadataRequest(
+                    params = listOf(token.contractAddress)
+                )
+                val metaResponse = alchemyApi.getTokenMetadata(ALCHEMY_URL, metaRequest)
+                val meta = metaResponse?.result ?: return@mapNotNull null
+                val decimals = meta.decimals ?: 18
+                val rawBalance = BigInteger(token.tokenBalance!!.removePrefix("0x"), 16)
+                val divisor = BigDecimal.TEN.pow(decimals)
+                val balance = BigDecimal(rawBalance).divide(divisor, decimals, java.math.RoundingMode.DOWN)
+
+                TokenBalanceEntity(
+                    contractAddress = token.contractAddress,
+                    name = meta.name ?: "Unknown",
+                    symbol = meta.symbol ?: "???",
+                    decimals = decimals,
+                    balance = balance.stripTrailingZeros().toPlainString(),
+                    logo = meta.logo
+                )
+            } catch (e: Exception) {
+                LogUtils.e("getTokenBalances", "获取代币元数据失败: ${e.message}")
+                null
+            }
+        }
+        emit(result)
+    }.catch {
+        LogUtils.e("getTokenBalances", "获取代币余额失败: ${it.message}")
+        emit(emptyList())
+    }.flowOn(Dispatchers.IO)
 }
