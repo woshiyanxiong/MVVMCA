@@ -1,6 +1,6 @@
 package com.camine.repository
 
-import com.ca.protocol.result.ReSource
+import com.ca.protocol.result.Resource
 import com.camine.entity.LoginBeanData
 import kotlinx.coroutines.flow.Flow
 
@@ -14,9 +14,9 @@ interface UserRepository {
      * 获取用户信息
      * @return Flow<String>
      */
-    fun getUserInfo(): Flow<ReSource<String?>>
+    fun getUserInfo(): Flow<Resource<String?>>
 
-    fun login(name: String, pwd: String): Flow<ReSource<LoginBeanData?>>
+    fun login(name: String, pwd: String): Flow<Resource<LoginBeanData?>>
 
-    fun registered(name: String, pwd: String, rePwd: String): Flow<ReSource<String?>>
+    fun registered(name: String, pwd: String, rePwd: String): Flow<Resource<String?>>
 }

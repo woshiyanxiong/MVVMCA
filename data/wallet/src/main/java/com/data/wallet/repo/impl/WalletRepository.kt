@@ -5,6 +5,9 @@ import android.util.Log
 import com.data.wallet.api.AlchemyApi
 import com.data.wallet.entity.AlchemyTokenBalanceRequest
 import com.data.wallet.entity.AlchemyTokenMetadataRequest
+import com.data.wallet.entity.AlchemyTokenPriceRequest
+import com.data.wallet.entity.AlchemyTokenPriceParams
+import com.data.wallet.entity.AlchemyTokenAddress
 import com.data.wallet.api.CoinGeckoApi
 import com.data.wallet.api.NodeRealApi
 import com.data.wallet.api.NodeRealRequest
@@ -478,5 +481,56 @@ internal class WalletRepository @Inject constructor(
     }.catch {
         LogUtils.e("getTokenBalances", "获取代币余额失败: ${it.message}")
         emit(emptyList())
+    }.flowOn(Dispatchers.IO)
+
+    /**
+     * 获取代币的 USD 价格
+     * 
+     * @param contractAddresses 代币合约地址列表，ETH 使用特殊地址 "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+     * @return Map<合约地址, USD价格>
+     */
+    override fun getTokenPrices(contractAddresses: List<String>): Flow<Map<String, Double>> = flow {
+        if (contractAddresses.isEmpty()) {
+            emit(emptyMap())
+            return@flow
+        }
+
+        val addresses = contractAddresses.map { address ->
+            AlchemyTokenAddress(
+                network = "eth-mainnet",
+                address = address
+            )
+        }
+
+        val request = AlchemyTokenPriceRequest(
+            params = listOf(AlchemyTokenPriceParams(addresses = addresses))
+        )
+
+        val response = alchemyApi.getTokenPrices(ALCHEMY_URL, request)
+        val priceMap = mutableMapOf<String, Double>()
+
+        response?.result?.data?.forEach { tokenData ->
+            val address = tokenData.address ?: return@forEach
+            val usdPrice = tokenData.prices?.find { it.currency == "usd" }?.value?.toDoubleOrNull() ?: 0.0
+            priceMap[address.lowercase()] = usdPrice
+        }
+
+        emit(priceMap)
+    }.catch {
+        LogUtils.e("getTokenPrices", "获取代币价格失败: ${it.message}")
+        emit(emptyMap())
+    }.flowOn(Dispatchers.IO)
+
+    /**
+     * 获取 ETH 的 USD 价格
+     * ETH 原生代币使用特殊地址: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
+     */
+    override fun getEthPriceFromAlchemy(): Flow<Double> = flow {
+        val ethAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+        val prices = getTokenPrices(listOf(ethAddress)).firstOrNull() ?: emptyMap()
+        emit(prices[ethAddress.lowercase()] ?: 0.0)
+    }.catch {
+        LogUtils.e("getEthPriceFromAlchemy", "获取 ETH 价格失败: ${it.message}")
+        emit(0.0)
     }.flowOn(Dispatchers.IO)
 }

@@ -1,6 +1,6 @@
 package com.component.uiStatus
 
-import com.ca.protocol.result.ReSource
+import com.ca.protocol.result.Resource
 
 /**
  * Created by yan_x
@@ -8,5 +8,5 @@ import com.ca.protocol.result.ReSource
  * @description
  */
 interface IStatusView:IUiStatusResource {
-    fun<T> addResource(r: ReSource<T>)
+    fun<T> addResource(r: Resource<T>)
 }

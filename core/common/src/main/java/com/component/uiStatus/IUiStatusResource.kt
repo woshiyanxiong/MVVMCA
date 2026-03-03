@@ -1,6 +1,6 @@
 package com.component.uiStatus
 
-import com.ca.protocol.result.ReSource
+import com.ca.protocol.result.Resource
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -10,5 +10,5 @@ import kotlinx.coroutines.flow.Flow
  */
 interface IUiStatusResource {
     fun loadingStatus(): Flow<Boolean>
-    fun errorStatus():Flow<ReSource<ReSource.Error>>
+    fun errorStatus():Flow<Resource<Resource.Error>>
 }

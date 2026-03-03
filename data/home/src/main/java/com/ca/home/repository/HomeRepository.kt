@@ -1,7 +1,7 @@
 package com.ca.home.repository
 
 import com.ca.home.entity.HomeResponse
-import com.ca.protocol.result.ReSource
+import com.ca.protocol.result.Resource
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -10,5 +10,5 @@ import kotlinx.coroutines.flow.Flow
  * @description
  */
 interface HomeRepository {
-    fun getHomeInfoList(page:Int): Flow<ReSource<HomeResponse?>>
+    fun getHomeInfoList(page:Int): Flow<Resource<HomeResponse?>>
 }

@@ -17,23 +17,23 @@
 package com.ca.protocol.result
 
 import androidx.lifecycle.MutableLiveData
-import com.ca.protocol.result.ReSource.Success
+import com.ca.protocol.result.Resource.Success
 
 /**
  * A generic class that holds a value with its loading status.
  * @param <T>
  */
-sealed class ReSource<out R> {
+sealed class Resource<out R> {
 
-    data class Success<out T>(val data: T) : ReSource<T>()
+    data class Success<out T>(val data: T) : Resource<T>()
     data class Error(
         val code: Int = 200,
         val msg: String = "",
         val exception: Exception? = null
     ) :
-        ReSource<Nothing>()
+        Resource<Nothing>()
 
-    object Loading : ReSource<Nothing>()
+    object Loading : Resource<Nothing>()
 
     override fun toString(): String {
         return when (this) {
@@ -45,32 +45,32 @@ sealed class ReSource<out R> {
 }
 
 /**
- * [Success.data] if [ReSource] is of type [Success]
+ * [Success.data] if [Resource] is of type [Success]
  */
-fun <T> ReSource<T>.successOr(fallback: T): T {
+fun <T> Resource<T>.successOr(fallback: T): T {
     return (this as? Success<T>)?.data ?: fallback
 }
 
-val <T> ReSource<T>.data: T?
+val <T> Resource<T>.data: T?
     get() = (this as? Success)?.data
 
 /**
- * Updates value of [liveData] if [ReSource] is of type [Success]
+ * Updates value of [liveData] if [Resource] is of type [Success]
  */
-inline fun <reified T> ReSource<T>.updateOnSuccess(liveData: MutableLiveData<T>) {
+inline fun <reified T> Resource<T>.updateOnSuccess(liveData: MutableLiveData<T>) {
     if (this is Success) {
         liveData.value = data
     }
 }
 
-fun<T> ReSource<T>.handle(
-    loading: ((ReSource.Loading) -> Unit)? = null,
+fun<T> Resource<T>.handle(
+    loading: ((Resource.Loading) -> Unit)? = null,
     success: ((Success<T?>) -> Unit)? = null,
-    error: ((ReSource.Error) -> Unit)? = null
+    error: ((Resource.Error) -> Unit)? = null
 ) {
     when (this) {
-        is ReSource.Loading -> loading?.invoke(this)
+        is Resource.Loading -> loading?.invoke(this)
         is Success<T> -> success?.invoke(this)
-        is ReSource.Error -> error?.invoke(this)
+        is Resource.Error -> error?.invoke(this)
     }
 }

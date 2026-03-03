@@ -1,7 +1,7 @@
 package com.camine.repository.impl
 
 import com.ca.protocol.getResponse
-import com.ca.protocol.result.ReSource
+import com.ca.protocol.result.Resource
 import com.camine.entity.LoginBeanData
 import com.camine.repository.UserRepository
 import com.camine.service.MineApiService
@@ -15,19 +15,19 @@ import javax.inject.Inject
  */
 internal class RemotelyUserRepository @Inject constructor(private val apiService: MineApiService) :
     UserRepository {
-    override fun getUserInfo(): Flow<ReSource<String?>> {
+    override fun getUserInfo(): Flow<Resource<String?>> {
         return getResponse {
             apiService.getUserInfo()
         }
     }
 
-    override fun login(name: String, pwd: String): Flow<ReSource<LoginBeanData?>> {
+    override fun login(name: String, pwd: String): Flow<Resource<LoginBeanData?>> {
         return getResponse {
             apiService.login(name,pwd)
         }
     }
 
-    override fun registered(name: String, pwd: String, rePwd: String): Flow<ReSource<String?>> {
+    override fun registered(name: String, pwd: String, rePwd: String): Flow<Resource<String?>> {
         return getResponse {
             apiService.registered(name,pwd,rePwd)
         }

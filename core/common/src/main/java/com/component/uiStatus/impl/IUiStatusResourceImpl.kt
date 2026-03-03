@@ -1,7 +1,7 @@
 package com.component.uiStatus.impl
 
 import android.util.Log
-import com.ca.protocol.result.ReSource
+import com.ca.protocol.result.Resource
 import com.ca.protocol.result.handle
 import com.component.uiStatus.IStatusView
 import kotlinx.coroutines.channels.BufferOverflow
@@ -14,14 +14,14 @@ import javax.inject.Inject
  * @description
  */
 class IUiStatusResourceImpl @Inject constructor() : IStatusView {
-    private val listResource = mutableListOf<ReSource<*>>()
+    private val listResource = mutableListOf<Resource<*>>()
 
     private val _loading = MutableStateFlow<Boolean?>(null)
     private val loading = _loading.map {
         it ?: false
     }
 
-    private val errorStatus= MutableSharedFlow<ReSource.Error>(
+    private val errorStatus= MutableSharedFlow<Resource.Error>(
         0,
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
@@ -32,11 +32,11 @@ class IUiStatusResourceImpl @Inject constructor() : IStatusView {
         return loading
     }
 
-    override fun errorStatus(): Flow<ReSource<ReSource.Error>> {
+    override fun errorStatus(): Flow<Resource<Resource.Error>> {
         return errorStatus
     }
 
-    override fun <T> addResource(r: ReSource<T>) {
+    override fun <T> addResource(r: Resource<T>) {
         r.handle(
             loading = {
                 Log.e("loadingImpl", "loading")

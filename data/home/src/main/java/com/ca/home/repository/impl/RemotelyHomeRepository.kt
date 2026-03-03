@@ -4,7 +4,7 @@ import com.ca.home.entity.HomeResponse
 import com.ca.home.repository.HomeRepository
 import com.ca.home.service.HomeApiService
 import com.ca.protocol.getResponse
-import com.ca.protocol.result.ReSource
+import com.ca.protocol.result.Resource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -15,7 +15,7 @@ import javax.inject.Inject
  */
 internal class RemotelyHomeRepository @Inject constructor(private val apiService: HomeApiService) :
     HomeRepository {
-    override fun getHomeInfoList(page: Int): Flow<ReSource<HomeResponse?>> {
+    override fun getHomeInfoList(page: Int): Flow<Resource<HomeResponse?>> {
         return getResponse {
             apiService.getInfoList(page)
         }

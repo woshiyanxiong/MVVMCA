@@ -1,26 +1,26 @@
 package com.component.ext
 
-import com.ca.protocol.result.ReSource
+import com.ca.protocol.result.Resource
 import com.ca.protocol.result.handle
 import com.component.uiStatus.IStatusView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-fun<T> Flow<ReSource<T>>.loadMap(action:(ReSource<T>)->Unit): Flow<ReSource<T>> {
+fun<T> Flow<Resource<T>>.loadMap(action:(Resource<T>)->Unit): Flow<Resource<T>> {
     return this.map {
         action.invoke(it)
         it
     }
 }
 
-fun<T> Flow<ReSource<T>>.loadMap(iStatusView: IStatusView): Flow<ReSource<T>> {
+fun<T> Flow<Resource<T>>.loadMap(iStatusView: IStatusView): Flow<Resource<T>> {
     return this.map {
         iStatusView.addResource(it)
         it
     }
 }
 
-suspend fun<T> Flow<ReSource<T>>.mapSuccess(action:(T?)->Unit){
+suspend fun<T> Flow<Resource<T>>.mapSuccess(action:(T?)->Unit){
     this.collect{ data->
         data.handle(
             success = {
