@@ -4,8 +4,6 @@ import com.data.wallet.entity.AlchemyTokenBalanceRequest
 import com.data.wallet.entity.AlchemyTokenBalanceResponse
 import com.data.wallet.entity.AlchemyTokenMetadataRequest
 import com.data.wallet.entity.AlchemyTokenMetadataResponse
-import com.data.wallet.entity.AlchemyTokenPriceRequest
-import com.data.wallet.entity.AlchemyTokenPriceResponse
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Url
@@ -14,7 +12,7 @@ import retrofit2.http.Url
  * Alchemy API 接口
  * 
  * Alchemy 是一个区块链开发平台，提供增强的以太坊 API 服务。
- * 本接口封装了 Alchemy 的 JSON-RPC 方法，用于查询代币余额、元数据和价格信息。
+ * 本接口封装了 Alchemy 的 JSON-RPC 方法，用于查询代币余额和元数据信息。
  * 
  * API 文档: https://docs.alchemy.com/reference/api-overview
  * 
@@ -66,25 +64,4 @@ interface AlchemyApi {
         @Url url: String,
         @Body request: AlchemyTokenMetadataRequest
     ): AlchemyTokenMetadataResponse?
-
-    /**
-     * 获取代币的 USD 价格
-     * 
-     * @param url Alchemy API 完整 URL (包含 API Key)
-     * @param request 请求体，包含代币合约地址列表
-     * @return 代币价格信息，包含 USD 价格和 24 小时涨跌幅
-     * 
-     * 示例请求:
-     * {
-     *   "jsonrpc": "2.0",
-     *   "method": "alchemy_getTokenPrices",
-     *   "params": [{ "addresses": [{ "network": "eth-mainnet", "address": "0x..." }] }],
-     *   "id": 1
-     * }
-     */
-    @POST
-    suspend fun getTokenPrices(
-        @Url url: String,
-        @Body request: AlchemyTokenPriceRequest
-    ): AlchemyTokenPriceResponse?
 }

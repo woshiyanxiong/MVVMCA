@@ -52,16 +52,4 @@ interface IWalletRepository {
 
     // 获取地址下所有代币余额（通过 Alchemy）
     fun getTokenBalances(address: String): Flow<List<TokenBalanceEntity>>
-
-    /**
-     * 获取代币的 USD 价格
-     * @param contractAddresses 代币合约地址列表
-     * @return Map<合约地址, USD价格>
-     */
-    fun getTokenPrices(contractAddresses: List<String>): Flow<Map<String, Double>>
-
-    /**
-     * 获取 ETH 的 USD 价格（通过 Alchemy）
-     */
-    fun getEthPriceFromAlchemy(): Flow<Double>
 }
