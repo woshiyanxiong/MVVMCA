@@ -39,7 +39,7 @@ import javax.inject.Inject
  */
 internal class WalletRepository @Inject constructor(
     private val walletStore: WalletStore,
-    private val ethRepository: EthRepository,
+    private val ethRepository: IEthRepository,
     private val alchemyRepository: IAlchemyRepository,
     private val netWorkRepository: INetworkRepository
 ) : IWalletRepository {
@@ -48,7 +48,7 @@ internal class WalletRepository @Inject constructor(
 
     override fun sendTransaction(toAddress: String, amount: String, password: String): Flow<String?> = flow {
         // 同步网络配置
-        ethRepository.syncNetwork()
+//        ethRepository.syncNetwork()
 
         // 获取当前钱包地址
         val currentAddress = walletStore.getWalletList().firstOrNull()?.firstOrNull()
@@ -86,7 +86,7 @@ internal class WalletRepository @Inject constructor(
     override fun getMainWalletInfo(): Flow<MainWalletInfoEntity?> {
         return netWorkRepository.getCurrentNetwork().flatMapLatest { config ->
             flow {
-                ethRepository.syncNetwork()
+//                ethRepository.syncNetwork()
                 
                 val walletList = getWalletList().firstOrNull()
                 if (walletList?.isNotEmpty() == true) {
