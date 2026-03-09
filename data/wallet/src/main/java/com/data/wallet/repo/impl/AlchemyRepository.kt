@@ -69,7 +69,7 @@ internal class AlchemyRepository @Inject constructor(
                 LogUtils.e("AlchemyRepository", "获取代币元数据失败: ${e.message}")
                 null
             }
-        }
+        }.filter { it.balance != "0" }
         emit(result)
     }.catch {
         LogUtils.e("AlchemyRepository", "获取代币余额失败: ${it.message}")

@@ -3,6 +3,7 @@ package com.mvvm.module_compose.vm
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.component.ext.signalFlow
+import com.data.wallet.entity.TokenBalanceEntity
 import com.data.wallet.repo.IWalletRepository
 import com.mvvm.module_compose.convertWeiToEth
 import com.mvvm.module_compose.formatTime
@@ -21,6 +22,8 @@ data class WalletMainState(
     val walletAddress: String = "",
     val ethBalance: String = "0.0",
     val ethValue: String = "$0.00",
+    val totalValue: String = "$0.00",
+    val tokenBalances: List<TokenBalanceEntity> = emptyList(),
     val walletList: List<String> = emptyList(),
     val transactions: List<TransactionUIState> = emptyList(),
     val error: String? = null
@@ -39,6 +42,8 @@ class WalletMainViewModel @Inject constructor(
             walletAddress = formatAddress(entity?.currentAddress),
             ethBalance = entity?.balance?: "0.00",
             ethValue = entity?.ethValue ?: "$0.00",
+            totalValue = entity?.totalValue ?: "$0.00",
+            tokenBalances = entity?.tokenBalances ?: emptyList(),
             walletList = entity?.walletList ?: emptyList(),
             transactions = entity?.transaction?.map { transaction->
                 TransactionUIState(

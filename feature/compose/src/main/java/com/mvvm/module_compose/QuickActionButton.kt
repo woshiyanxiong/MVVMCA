@@ -1,17 +1,23 @@
 package com.mvvm.module_compose
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 @Composable
 fun QuickActionButton(
@@ -75,11 +81,33 @@ fun AssetItem(
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = asset.icon,
-            fontSize = 32.sp,
-            modifier = Modifier.size(40.dp)
-        )
+        // 代币图标：优先使用网络图片，否则显示 emoji
+        if (!asset.logoUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = asset.logoUrl,
+                contentDescription = asset.symbol,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant,
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = asset.icon,
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
         
         Spacer(modifier = Modifier.width(12.dp))
         
@@ -102,11 +130,13 @@ fun AssetItem(
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp
             )
-            Text(
-                text = asset.value,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (asset.value.isNotBlank()) {
+                Text(
+                    text = asset.value,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

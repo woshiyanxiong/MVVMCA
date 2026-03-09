@@ -65,7 +65,8 @@ data class Asset(
     val symbol: String,
     val balance: String,
     val value: String,
-    val icon: String = "💰"
+    val icon: String = "💰",
+    val logoUrl: String? = null
 )
 
 
@@ -137,7 +138,7 @@ fun WalletMainScreen(
                             )
                         } else {
                             Text(
-                                text = state.ethValue,
+                                text = state.totalValue,
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold
@@ -207,6 +208,20 @@ fun WalletMainScreen(
                                 icon = "⟠"
                             )
                         )
+                        
+                        // ERC20 代币列表
+                        state.tokenBalances.forEach { token ->
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            AssetItem(
+                                asset = Asset(
+                                    name = token.name,
+                                    symbol = token.symbol,
+                                    balance = token.balance,
+                                    value = "",
+                                    logoUrl = token.logo
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -257,7 +272,7 @@ fun WalletMainScreen(
                                     transaction = transaction
                                 )
                                 if (transaction != state.transactions.last()) {
-                                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                                 }
                             }
                         }

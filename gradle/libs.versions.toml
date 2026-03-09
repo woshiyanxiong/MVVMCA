@@ -36,6 +36,7 @@ gson = "2.9.0"
 room = "2.4.2"
 web3jCore = "4.12.3"
 bitcoinj = "0.16.2"
+coil = "2.6.0"
 
 # Testing
 junit = "4.14-SNAPSHOT"
@@ -90,6 +91,7 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 room-common = { group = "androidx.room", name = "room-common", version.ref = "room" }
 web3j = { group = "org.web3j", name = "core", version.ref = "web3jCore" }
 bitcoinj = { group = "org.bitcoinj", name = "bitcoinj-core", version.ref = "bitcoinj" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 # Gradle Plugins (for buildscript classpath)
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }

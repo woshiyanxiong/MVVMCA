@@ -106,7 +106,15 @@ internal class WalletRepository @Inject constructor(
 
                     // 获取 ETH 价格
                     val ethPrice = ethRepository.getEthPrice().firstOrNull() ?: 0.0
-                    val ethValue = String.format(Locale.US, "$%.2f", balance.toDouble() * ethPrice)
+                    val ethUsdValue = balance.toDouble() * ethPrice
+                    val ethValue = String.format(Locale.US, "$%.2f", ethUsdValue)
+
+                    // 总资产 = ETH USD 价值 + 所有代币余额求和
+                    val tokenTotalBalance = tokenBalances?.sumOf { 
+                        it.balance.toDoubleOrNull() ?: 0.0 
+                    } ?: 0.0
+                    val totalValue = String.format(Locale.US, "$%.2f", ethUsdValue + tokenTotalBalance)
+                    LogUtils.e("总资产", totalValue)
 
                     emit(
                         MainWalletInfoEntity(
@@ -114,6 +122,8 @@ internal class WalletRepository @Inject constructor(
                             walletList = walletList,
                             balance = String.format(Locale.US, "%.4f", balance),
                             ethValue = ethValue,
+                            totalValue = totalValue,
+                            tokenBalances = tokenBalances ?: emptyList(),
                             transaction = transactions
                         )
                     )

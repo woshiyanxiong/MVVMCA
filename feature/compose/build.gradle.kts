@@ -131,4 +131,7 @@ dependencies {
 
     // Wallet module
     implementation(project(":data:wallet"))
+
+    // Coil (网络图片加载)
+    implementation(libs.coil.compose)
 }
