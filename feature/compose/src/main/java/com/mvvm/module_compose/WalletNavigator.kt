@@ -46,7 +46,7 @@ object WalletNavigator {
      */
     fun navigateToTransfer(context: Context) {
         ARouter.getInstance()
-            .build("/wallet/transfer")
+            .build("/wallet/selecttoken")
             .navigation(context)
     }
 }

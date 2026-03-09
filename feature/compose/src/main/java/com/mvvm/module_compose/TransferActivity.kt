@@ -39,6 +39,15 @@ class TransferActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // 接收选中的币种信息
+        val tokenSymbol = intent.getStringExtra("tokenSymbol") ?: "ETH"
+        val tokenName = intent.getStringExtra("tokenName") ?: "Ethereum"
+        val tokenBalance = intent.getStringExtra("tokenBalance") ?: "0.0"
+        val contractAddress = intent.getStringExtra("contractAddress") ?: ""
+        val isNative = intent.getBooleanExtra("isNative", true)
+
+        viewModel.setTokenInfo(tokenSymbol, tokenBalance)
         
         setContent {
             MaterialTheme {
@@ -54,6 +63,9 @@ class TransferActivity : ComponentActivity() {
                             intent.putExtra("toAddress", s.toAddress)
                             intent.putExtra("amount", s.amount)
                             intent.putExtra("balance", s.balance)
+                            intent.putExtra("tokenSymbol", tokenSymbol)
+                            intent.putExtra("contractAddress", contractAddress)
+                            intent.putExtra("isNative", isNative)
                             startActivity(intent)
                         }
                     },
@@ -160,7 +172,7 @@ fun TransferScreen(
                                     color = Color.White.copy(alpha = 0.9f)
                                 )
                                 Text(
-                                    text = "${state.balance} ETH",
+                                    text = "${state.balance} ${state.tokenSymbol}",
                                     fontSize = 28.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -275,7 +287,7 @@ fun TransferScreen(
                         placeholder = { Text("0.0") },
                         suffix = { 
                             Text(
-                                "ETH",
+                                state.tokenSymbol,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.primary
                             ) 
@@ -363,6 +375,7 @@ data class TransferState(
     val toAddress: String = "",
     val amount: String = "",
     val balance: String = "0.0",
+    val tokenSymbol: String = "ETH",
     val addressError: String? = null,
     val amountError: String? = null,
     val error: String? = null,

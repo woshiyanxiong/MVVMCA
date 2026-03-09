@@ -35,6 +35,8 @@ class TransferViewModel @Inject constructor(
     private val _amountUpdate = signalFlow<String>()
     /** 实际余额流 */
     private val _balanceFlow = signalFlow<String>()
+    /** 币种符号 */
+    private var _tokenSymbol = "ETH"
     
     /** 转账成功事件流 */
     private val _transferSuccessEvent = MutableSharedFlow<Unit>()
@@ -47,6 +49,16 @@ class TransferViewModel @Inject constructor(
     init {
         // 初始化时加载余额
         loadBalance()
+    }
+    
+    /**
+     * 设置选中的币种信息
+     * @param symbol 币种符号
+     * @param balance 币种余额
+     */
+    fun setTokenInfo(symbol: String, balance: String) {
+        _tokenSymbol = symbol
+        _balanceFlow.tryEmit(balance)
     }
     
     /**
@@ -80,6 +92,7 @@ class TransferViewModel @Inject constructor(
             toAddress = address,
             amount = amount,
             balance = balance,
+            tokenSymbol = _tokenSymbol,
             addressError = addressError,
             amountError = amountError,
             isValid = isValid,

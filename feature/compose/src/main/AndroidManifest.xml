@@ -19,6 +19,7 @@
         <activity android:name=".CreatePasswordActivity"/>
         <activity android:name=".account.AccountActivity"/>
         <activity android:name=".TransferActivity"/>
+        <activity android:name=".selecttoken.SelectTokenActivity"/>
         <activity android:name=".transfer.TransferConfirmActivity"/>
         <activity android:name=".SwapActivity"/>
 
