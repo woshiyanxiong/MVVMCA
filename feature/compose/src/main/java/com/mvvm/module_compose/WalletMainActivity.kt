@@ -167,7 +167,7 @@ fun WalletMainScreen(
                     QuickActionButton(
                         iconRes = R.drawable.ic_receive,
                         text = "收款",
-                        onClick = { }
+                        onClick = { WalletNavigator.navigateToReceive(context) }
                     )
                     QuickActionButton(
                         icon = Icons.Default.List,

@@ -22,6 +22,7 @@
         <activity android:name=".selecttoken.SelectTokenActivity"/>
         <activity android:name=".transfer.TransferConfirmActivity"/>
         <activity android:name=".SwapActivity"/>
+        <activity android:name=".receive.ReceiveActivity"/>
 
     </application>
 </manifest>

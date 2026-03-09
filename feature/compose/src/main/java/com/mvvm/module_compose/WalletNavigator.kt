@@ -42,6 +42,15 @@ object WalletNavigator {
     }
 
     /**
+     * 跳转到收款页面
+     */
+    fun navigateToReceive(context: Context) {
+        ARouter.getInstance()
+            .build("/wallet/receive")
+            .navigation(context)
+    }
+
+    /**
      * 跳转到转账页面
      */
     fun navigateToTransfer(context: Context) {

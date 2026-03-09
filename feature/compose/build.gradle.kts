@@ -134,4 +134,7 @@ dependencies {
 
     // Coil (网络图片加载)
     implementation(libs.coil.compose)
+
+    // ZXing (二维码生成)
+    implementation(libs.zxing.core)
 }
