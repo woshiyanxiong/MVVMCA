@@ -1,10 +1,11 @@
 package com.data.wallet.repo.impl
 
+import android.content.Context
 import android.util.Log
-import com.data.wallet.api.UniswapTokenApi
 import com.data.wallet.entity.MainWalletInfoEntity
 import com.data.wallet.entity.TokenBalanceEntity
 import com.data.wallet.entity.UniswapToken
+import com.data.wallet.entity.UniswapTokenListResponse
 import com.data.wallet.model.CreateWalletRequest
 import com.data.wallet.model.ImportWalletRequest
 import com.data.wallet.model.TransactionModel
@@ -16,6 +17,7 @@ import com.data.wallet.repo.IWalletRepository
 import com.data.wallet.storage.WalletStore
 import com.google.gson.Gson
 import com.mvvm.logcat.LogUtils
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -40,11 +42,11 @@ import javax.inject.Inject
  * 组合 EthRepository 和 AlchemyRepository，提供钱包相关的业务逻辑
  */
 internal class WalletRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val walletStore: WalletStore,
     private val ethRepository: IEthRepository,
     private val alchemyRepository: IAlchemyRepository,
-    private val netWorkRepository: INetworkRepository,
-    private val uniswapTokenApi: UniswapTokenApi
+    private val netWorkRepository: INetworkRepository
 ) : IWalletRepository {
 
     override fun getWalletList(): Flow<List<String>> = walletStore.getWalletList()
@@ -241,7 +243,8 @@ internal class WalletRepository @Inject constructor(
     )
 
     override fun getUniswapTokenList(): Flow<List<UniswapToken>> = flow {
-        val response = uniswapTokenApi.getTokenList("https://tokens.uniswap.org/")
+        val jsonString = context.assets.open("uniswap_tokens.json").bufferedReader().use { it.readText() }
+        val response = Gson().fromJson(jsonString, UniswapTokenListResponse::class.java)
         val mainnetTokens = response?.tokens
             ?.filter { it.chainId == 1 }
             ?.distinctBy { it.symbol }
