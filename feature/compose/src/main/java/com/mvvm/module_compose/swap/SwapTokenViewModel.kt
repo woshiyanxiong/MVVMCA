@@ -61,41 +61,48 @@ class SwapTokenViewModel @Inject constructor(
     private var tokenBalanceMap: Map<String, String> = emptyMap()
 
     init {
-        loadWalletInfo()
+        loadBalances()
         loadTokenList()
     }
 
     /**
-     * 通过 getMainWalletInfo 获取余额和 ETH 价格
+     * 通过 getBalance 获取 ETH 余额，通过 getTokenBalances 获取 ERC20 余额
+     * 用合约地址匹配币种列表
      */
-    private fun loadWalletInfo() {
+    private fun loadBalances() {
         viewModelScope.launch {
-            walletRepository.getMainWalletInfo().collect { info ->
-                if (info != null) {
-                    ethBalance = info.balance
-                    val ethUsd = info.ethValue.removePrefix("$").toDoubleOrNull() ?: 0.0
-                    val bal = info.balance.toDoubleOrNull() ?: 0.0
-                    ethPrice = if (bal > 0) ethUsd / bal else 0.0
+            val address = walletRepository.getWalletList().firstOrNull()?.firstOrNull() ?: return@launch
 
-                    // 缓存代币余额
-                    tokenBalanceMap = buildMap {
-                        put("ETH", ethBalance)
-                        info.tokenBalances.forEach { put(it.symbol, it.balance) }
-                    }
+            // 获取 ETH 余额
+            walletRepository.getBalance(address).firstOrNull()?.let { wei ->
+                ethBalance = java.math.BigDecimal(wei)
+                    .divide(java.math.BigDecimal("1000000000000000000"), 4, RoundingMode.DOWN)
+                    .toPlainString()
+                tokenBalanceMap = tokenBalanceMap + ("0x0000000000000000000000000000000000000000" to ethBalance)
+            }
 
-                    // 更新 tokenList 中的余额
-                    val updatedList = _state.value.tokenList.map { token ->
-                        token.copy(balance = tokenBalanceMap[token.symbol] ?: "")
-                    }
+            // 获取 ETH 价格
+            walletRepository.getEthPrice().firstOrNull()?.let { price ->
+                ethPrice = price
+            }
 
-                    val currentFromBalance = tokenBalanceMap[_state.value.fromToken.symbol] ?: "0.0"
-                    _state.value = _state.value.copy(
-                        fromBalance = currentFromBalance,
-                        tokenList = updatedList
-                    )
-                    recalculate()
+            // 获取 ERC20 代币余额，用合约地址做 key
+            walletRepository.getTokenBalances(address).firstOrNull()?.let { balances ->
+                balances.forEach { token ->
+                    tokenBalanceMap = tokenBalanceMap + (token.contractAddress.lowercase() to token.balance)
                 }
             }
+
+            // 更新 tokenList 中的余额（通过合约地址匹配）
+            val updatedList = _state.value.tokenList.map { token ->
+                token.copy(balance = tokenBalanceMap[token.address.lowercase()] ?: "")
+            }
+            val currentFromBalance = tokenBalanceMap[_state.value.fromToken.address.lowercase()] ?: "0.0"
+            _state.value = _state.value.copy(
+                fromBalance = currentFromBalance,
+                tokenList = updatedList
+            )
+            recalculate()
         }
     }
 
@@ -105,7 +112,8 @@ class SwapTokenViewModel @Inject constructor(
     private fun loadTokenList() {
         viewModelScope.launch {
             walletRepository.getUniswapTokenList().collect { tokens ->
-                val ethToken = SwapTokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000", 18, null, tokenBalanceMap["ETH"] ?: "")
+                val ethToken = SwapTokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000", 18, null,
+                    tokenBalanceMap["0x0000000000000000000000000000000000000000"] ?: "")
                 val tokenInfoList = listOf(ethToken) + tokens.map { token ->
                     SwapTokenInfo(
                         symbol = token.symbol,
@@ -113,7 +121,7 @@ class SwapTokenViewModel @Inject constructor(
                         address = token.address,
                         decimals = token.decimals,
                         logoUrl = token.logoURI,
-                        balance = tokenBalanceMap[token.symbol] ?: ""
+                        balance = tokenBalanceMap[token.address.lowercase()] ?: ""
                     )
                 }
                 _state.value = _state.value.copy(
