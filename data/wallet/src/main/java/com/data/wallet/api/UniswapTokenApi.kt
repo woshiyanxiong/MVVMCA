@@ -12,7 +12,8 @@ interface UniswapTokenApi {
 
     /**
      * 获取 Uniswap 默认代币列表
+     * @param url 完整的 API 地址
      */
     @GET
-    suspend fun getTokenList(@Url url: String = "https://tokens.uniswap.org/"): UniswapTokenListResponse?
+    suspend fun getTokenList(@Url url: String): UniswapTokenListResponse?
 }

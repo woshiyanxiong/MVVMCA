@@ -52,4 +52,7 @@ interface IWalletRepository {
 
     // 获取地址下所有代币余额（通过 Alchemy）
     fun getTokenBalances(address: String): Flow<List<TokenBalanceEntity>>
+
+    // 获取 Uniswap 主网热门代币列表
+    fun getUniswapTokenList(): Flow<List<com.data.wallet.entity.UniswapToken>>
 }

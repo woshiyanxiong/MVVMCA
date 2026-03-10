@@ -2,12 +2,8 @@ package com.mvvm.module_compose.swap
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.data.wallet.api.UniswapTokenApi
-import com.data.wallet.entity.UniswapToken
-import com.data.wallet.repo.IEthRepository
 import com.data.wallet.repo.IWalletRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
@@ -44,59 +40,63 @@ data class SwapTokenState(
     val error: String? = null,
     val isLoading: Boolean = false,
     val isValid: Boolean = false,
-    // 币种列表
     val tokenList: List<SwapTokenInfo> = emptyList(),
     val isLoadingTokens: Boolean = true,
-    // 弹框控制
     val showFromTokenPicker: Boolean = false,
     val showToTokenPicker: Boolean = false
 )
 
 @HiltViewModel
 class SwapTokenViewModel @Inject constructor(
-    private val walletRepository: IWalletRepository,
-    private val ethRepository: IEthRepository,
-    private val uniswapTokenApi: UniswapTokenApi
+    private val walletRepository: IWalletRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SwapTokenState())
     val state: StateFlow<SwapTokenState> = _state
 
     private var ethPrice: Double = 0.0
-
-    /** 热门币种符号，用于排序 */
-    private val popularSymbols = listOf(
-        "ETH", "USDT", "USDC", "DAI", "WBTC", "WETH", "UNI", "LINK",
-        "AAVE", "MKR", "SNX", "COMP", "CRV", "LDO", "RPL", "MATIC",
-        "SHIB", "APE", "PEPE", "ARB"
-    )
+    private var ethBalance: String = "0.0"
 
     init {
+        loadWalletInfo()
         loadTokenList()
-        loadEthBalance()
-        loadEthPrice()
     }
 
     /**
-     * 从 Uniswap Token List 加载主网热门币种前20
+     * 通过 getMainWalletInfo 获取余额和 ETH 价格
+     */
+    private fun loadWalletInfo() {
+        viewModelScope.launch {
+            walletRepository.getMainWalletInfo().collect { info ->
+                if (info != null) {
+                    ethBalance = info.balance
+                    // 从 ethValue 解析价格: "$3000.00" -> 3000.00 / balance
+                    val ethUsd = info.ethValue.removePrefix("$").toDoubleOrNull() ?: 0.0
+                    val bal = info.balance.toDoubleOrNull() ?: 0.0
+                    ethPrice = if (bal > 0) ethUsd / bal else 0.0
+
+                    // 更新当前支付币种余额
+                    val currentFromBalance = if (_state.value.fromToken.symbol == "ETH") {
+                        ethBalance
+                    } else {
+                        // 从代币列表中查找余额
+                        info.tokenBalances.find { it.symbol == _state.value.fromToken.symbol }?.balance ?: "0.0"
+                    }
+                    _state.value = _state.value.copy(fromBalance = currentFromBalance)
+                    recalculate()
+                }
+            }
+        }
+    }
+
+    /**
+     * 从 Repository 获取 Uniswap 主网热门代币列表
      */
     private fun loadTokenList() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val response = uniswapTokenApi.getTokenList()
-                val mainnetTokens = response?.tokens
-                    ?.filter { it.chainId == 1 } // 只取主网
-                    ?.distinctBy { it.symbol }
-
-                // 按热门排序，取前20
-                val sorted = mainnetTokens?.sortedBy { token ->
-                    val idx = popularSymbols.indexOf(token.symbol)
-                    if (idx >= 0) idx else Int.MAX_VALUE
-                }?.take(20) ?: emptyList()
-
-                // 加上 ETH（原生代币不在列表中）
+        viewModelScope.launch {
+            walletRepository.getUniswapTokenList().collect { tokens ->
                 val ethToken = SwapTokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000", 18, null)
-                val tokenInfoList = listOf(ethToken) + sorted.map { token ->
+                val tokenInfoList = listOf(ethToken) + tokens.map { token ->
                     SwapTokenInfo(
                         symbol = token.symbol,
                         name = token.name,
@@ -105,36 +105,11 @@ class SwapTokenViewModel @Inject constructor(
                         logoUrl = token.logoURI
                     )
                 }
-
                 _state.value = _state.value.copy(
                     tokenList = tokenInfoList,
                     isLoadingTokens = false,
-                    // 更新 toToken 的 logoUrl
                     toToken = tokenInfoList.find { it.symbol == _state.value.toToken.symbol } ?: _state.value.toToken
                 )
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(isLoadingTokens = false)
-            }
-        }
-    }
-
-    private fun loadEthBalance() {
-        viewModelScope.launch {
-            val address = walletRepository.getWalletList().firstOrNull()?.firstOrNull() ?: return@launch
-            ethRepository.getBalance(address).collect { balance ->
-                if (balance != null) {
-                    val ethBalance = BigDecimal(balance).divide(BigDecimal("1000000000000000000"), 4, RoundingMode.DOWN).toPlainString()
-                    _state.value = _state.value.copy(fromBalance = ethBalance)
-                }
-            }
-        }
-    }
-
-    private fun loadEthPrice() {
-        viewModelScope.launch {
-            ethRepository.getEthPrice().collect { price ->
-                ethPrice = price ?: 0.0
-                recalculate()
             }
         }
     }
@@ -144,9 +119,6 @@ class SwapTokenViewModel @Inject constructor(
         recalculate()
     }
 
-    /**
-     * 交换支付/接收代币
-     */
     fun swapTokens() {
         val s = _state.value
         _state.value = s.copy(
@@ -154,45 +126,35 @@ class SwapTokenViewModel @Inject constructor(
             toToken = s.fromToken,
             fromAmount = "",
             toAmount = "",
-            fromBalance = "0.0",
+            fromBalance = if (s.toToken.symbol == "ETH") ethBalance else "0.0",
             fromAmountError = null
         )
-        // 如果新的 fromToken 是 ETH，重新加载余额
-        if (_state.value.fromToken.symbol == "ETH") {
-            loadEthBalance()
-        }
         recalculate()
     }
 
-    /** 显示支付代币选择弹框 */
     fun showFromTokenPicker() {
         _state.value = _state.value.copy(showFromTokenPicker = true)
     }
 
-    /** 显示接收代币选择弹框 */
     fun showToTokenPicker() {
         _state.value = _state.value.copy(showToTokenPicker = true)
     }
 
-    /** 关闭弹框 */
     fun dismissTokenPicker() {
         _state.value = _state.value.copy(showFromTokenPicker = false, showToTokenPicker = false)
     }
 
-    /** 选择支付代币 */
     fun selectFromToken(token: SwapTokenInfo) {
         _state.value = _state.value.copy(
             fromToken = token,
             showFromTokenPicker = false,
             fromAmount = "",
             toAmount = "",
-            fromBalance = if (token.symbol == "ETH") _state.value.fromBalance else "0.0"
+            fromBalance = if (token.symbol == "ETH") ethBalance else "0.0"
         )
-        if (token.symbol == "ETH") loadEthBalance()
         recalculate()
     }
 
-    /** 选择接收代币 */
     fun selectToToken(token: SwapTokenInfo) {
         _state.value = _state.value.copy(
             toToken = token,
@@ -201,9 +163,6 @@ class SwapTokenViewModel @Inject constructor(
         recalculate()
     }
 
-    /**
-     * 重新计算兑换金额
-     */
     private fun recalculate() {
         val s = _state.value
         val fromAmount = s.fromAmount.toDoubleOrNull()
@@ -219,7 +178,6 @@ class SwapTokenViewModel @Inject constructor(
             return
         }
 
-        // 简化汇率计算：基于 ETH 价格
         val rate = getExchangeRate(s.fromToken.symbol, s.toToken.symbol)
         val toAmount = BigDecimal(fromAmount).multiply(BigDecimal(rate)).setScale(6, RoundingMode.DOWN)
         val minimumReceived = toAmount.multiply(BigDecimal("0.995")).setScale(6, RoundingMode.DOWN)
@@ -238,35 +196,25 @@ class SwapTokenViewModel @Inject constructor(
         )
     }
 
-    /**
-     * 获取两个代币之间的汇率
-     * 基于 ETH 价格和稳定币 1:1 USD 的假设
-     */
     private fun getExchangeRate(fromSymbol: String, toSymbol: String): Double {
         val stablecoins = setOf("USDT", "USDC", "DAI", "BUSD", "TUSD", "FRAX")
-
         val fromUsd = when {
             fromSymbol == "ETH" || fromSymbol == "WETH" -> ethPrice
             stablecoins.contains(fromSymbol) -> 1.0
-            else -> 1.0 // 其他代币暂时按 1 USD
+            else -> 1.0
         }
-
         val toUsd = when {
             toSymbol == "ETH" || toSymbol == "WETH" -> ethPrice
             stablecoins.contains(toSymbol) -> 1.0
             else -> 1.0
         }
-
         return if (toUsd > 0) fromUsd / toUsd else 0.0
     }
 
-    /** 执行兑换（模拟） */
     fun executeSwap() {
         if (!_state.value.isValid) return
         _state.value = _state.value.copy(isLoading = true, error = null)
-
         viewModelScope.launch {
-            // TODO: 接入真实 DEX 合约
             kotlinx.coroutines.delay(2000)
             _state.value = _state.value.copy(
                 isLoading = false,

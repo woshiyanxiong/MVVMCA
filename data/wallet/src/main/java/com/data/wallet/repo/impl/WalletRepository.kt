@@ -1,8 +1,10 @@
 package com.data.wallet.repo.impl
 
 import android.util.Log
+import com.data.wallet.api.UniswapTokenApi
 import com.data.wallet.entity.MainWalletInfoEntity
 import com.data.wallet.entity.TokenBalanceEntity
+import com.data.wallet.entity.UniswapToken
 import com.data.wallet.model.CreateWalletRequest
 import com.data.wallet.model.ImportWalletRequest
 import com.data.wallet.model.TransactionModel
@@ -41,7 +43,8 @@ internal class WalletRepository @Inject constructor(
     private val walletStore: WalletStore,
     private val ethRepository: IEthRepository,
     private val alchemyRepository: IAlchemyRepository,
-    private val netWorkRepository: INetworkRepository
+    private val netWorkRepository: INetworkRepository,
+    private val uniswapTokenApi: UniswapTokenApi
 ) : IWalletRepository {
 
     override fun getWalletList(): Flow<List<String>> = walletStore.getWalletList()
@@ -229,4 +232,28 @@ internal class WalletRepository @Inject constructor(
         val weiInEth = BigDecimal("1000000000000000000")
         return BigDecimal(wei ?: BigInteger.ZERO).divide(weiInEth)
     }
+
+    /** 热门币种符号，用于排序 */
+    private val popularSymbols = listOf(
+        "USDT", "USDC", "DAI", "WBTC", "WETH", "UNI", "LINK",
+        "AAVE", "MKR", "SNX", "COMP", "CRV", "LDO", "RPL", "MATIC",
+        "SHIB", "APE", "PEPE", "ARB"
+    )
+
+    override fun getUniswapTokenList(): Flow<List<UniswapToken>> = flow {
+        val response = uniswapTokenApi.getTokenList("https://tokens.uniswap.org/")
+        val mainnetTokens = response?.tokens
+            ?.filter { it.chainId == 1 }
+            ?.distinctBy { it.symbol }
+
+        val sorted = mainnetTokens?.sortedBy { token ->
+            val idx = popularSymbols.indexOf(token.symbol)
+            if (idx >= 0) idx else Int.MAX_VALUE
+        }?.take(20) ?: emptyList()
+
+        emit(sorted)
+    }.catch {
+        LogUtils.e("WalletRepository", "获取 Uniswap 代币列表失败: ${it.message}")
+        emit(emptyList())
+    }.flowOn(Dispatchers.IO)
 }
