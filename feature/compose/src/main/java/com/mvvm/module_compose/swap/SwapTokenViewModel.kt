@@ -6,7 +6,6 @@ import com.data.wallet.repo.IWalletRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -61,62 +60,45 @@ class SwapTokenViewModel @Inject constructor(
     private var tokenBalanceMap: Map<String, String> = emptyMap()
 
     init {
-        loadBalances()
-        loadTokenList()
+        loadSwapData()
     }
 
     /**
-     * 从 Repository 获取所有代币余额（ETH + ERC20），通过合约地址匹配
+     * 从 Repository 一次性获取兑换页面所需数据（代币列表 + 余额 + ETH价格）
      */
-    private fun loadBalances() {
+    private fun loadSwapData() {
         viewModelScope.launch {
-            // 获取 ETH 价格
-            walletRepository.getEthPrice().firstOrNull()?.let { price ->
-                ethPrice = price
-            }
+            walletRepository.getSwapTokenData().collect { data ->
+                ethPrice = data.ethPrice
+                tokenBalanceMap = data.balanceMap
+                ethBalance = data.balanceMap["0x0000000000000000000000000000000000000000"] ?: "0.0"
 
-            // 获取所有代币余额 (合约地址 -> 余额)
-            walletRepository.getAllTokenBalances().collect { balances ->
-                tokenBalanceMap = balances
-                ethBalance = balances["0x0000000000000000000000000000000000000000"] ?: "0.0"
-
-                // 更新 tokenList 中的余额
-                val updatedList = _state.value.tokenList.map { token ->
-                    token.copy(balance = balances[token.address.lowercase()] ?: "")
-                }
-                val currentFromBalance = balances[_state.value.fromToken.address.lowercase()] ?: "0.0"
-                _state.value = _state.value.copy(
-                    fromBalance = currentFromBalance,
-                    tokenList = updatedList
-                )
-                recalculate()
-            }
-        }
-    }
-
-    /**
-     * 从 Repository 获取 Uniswap 主网热门代币列表
-     */
-    private fun loadTokenList() {
-        viewModelScope.launch {
-            walletRepository.getUniswapTokenList().collect { tokens ->
+                // 构建代币列表（ETH + Uniswap 代币），附带余额
                 val ethToken = SwapTokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000", 18, null,
-                    tokenBalanceMap["0x0000000000000000000000000000000000000000"] ?: "")
-                val tokenInfoList = listOf(ethToken) + tokens.map { token ->
+                    data.balanceMap["0x0000000000000000000000000000000000000000"] ?: "")
+                val tokenInfoList = listOf(ethToken) + data.tokenList.map { token ->
                     SwapTokenInfo(
                         symbol = token.symbol,
                         name = token.name,
                         address = token.address,
                         decimals = token.decimals,
                         logoUrl = token.logoURI,
-                        balance = tokenBalanceMap[token.address.lowercase()] ?: ""
+                        balance = data.balanceMap[token.address.lowercase()] ?: ""
                     )
                 }
+
+                val currentFromBalance = data.balanceMap[_state.value.fromToken.address.lowercase()] ?: "0.0"
+                // 更新 fromToken，使其 balance 字段也同步
+                val updatedFromToken = tokenInfoList.find { it.symbol == _state.value.fromToken.symbol }
+                    ?: _state.value.fromToken.copy(balance = currentFromBalance)
                 _state.value = _state.value.copy(
+                    fromToken = updatedFromToken,
+                    fromBalance = currentFromBalance,
                     tokenList = tokenInfoList,
                     isLoadingTokens = false,
                     toToken = tokenInfoList.find { it.symbol == _state.value.toToken.symbol } ?: _state.value.toToken
                 )
+                recalculate()
             }
         }
     }

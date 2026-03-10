@@ -16,6 +16,15 @@ data class CreateWalletResult(
     val walletFileName: String
 )
 
+/**
+ * 兑换页面聚合数据
+ */
+data class SwapTokenData(
+    val ethPrice: Double,
+    val balanceMap: Map<String, String>,
+    val tokenList: List<com.data.wallet.entity.UniswapToken>
+)
+
 interface IWalletRepository {
     fun getWalletList(): Flow<List<String>>
 
@@ -54,8 +63,11 @@ interface IWalletRepository {
     fun getTokenBalances(address: String): Flow<List<TokenBalanceEntity>>
 
     // 获取当前钱包所有代币余额（ETH + ERC20），通过合约地址做 key
-    fun getAllTokenBalances(): Flow<Map<String, String>>
+    fun getWalletBalanceMap(): Flow<Map<String, String>>
 
     // 获取 Uniswap 主网热门代币列表
     fun getUniswapTokenList(): Flow<List<com.data.wallet.entity.UniswapToken>>
+
+    // 兑换页面聚合数据：代币列表 + 余额 + ETH价格，一个出口
+    fun getSwapTokenData(): Flow<SwapTokenData>
 }

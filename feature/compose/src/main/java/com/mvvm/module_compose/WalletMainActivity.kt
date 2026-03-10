@@ -375,17 +375,7 @@ fun TransactionItem(transaction: TransactionUIState) {
 
 // 辅助函数
 fun convertWeiToEth(wei: String): String {
-    return try {
-        val weiValue = if (wei.startsWith("0x") || wei.startsWith("0X")) {
-            java.math.BigInteger(wei.removePrefix("0x").removePrefix("0X"), 16)
-        } else {
-            java.math.BigInteger(wei)
-        }
-        val ethValue = java.math.BigDecimal(weiValue).divide(java.math.BigDecimal("1000000000000000000"))
-        String.format("%.6f", ethValue)
-    } catch (e: Exception) {
-        "0.000000"
-    }
+    return com.data.wallet.util.WeiConverter.weiHexToEthString(wei)
 }
 
 fun formatTime(timestamp: Long): String {

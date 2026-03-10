@@ -209,7 +209,7 @@ internal class WalletRepository @Inject constructor(
      * 获取当前钱包所有代币余额（ETH + ERC20）
      * @return Map<合约地址(lowercase), 余额字符串>，ETH 的 key 为 0x0000...0000
      */
-    override fun getAllTokenBalances(): Flow<Map<String, String>> = flow {
+    override fun getWalletBalanceMap(): Flow<Map<String, String>> = flow {
         val address = walletStore.getWalletList().firstOrNull()?.firstOrNull()
         if (address.isNullOrBlank()) {
             emit(emptyMap())
@@ -220,9 +220,7 @@ internal class WalletRepository @Inject constructor(
 
         // ETH 余额
         val ethWei = ethRepository.getBalance(address).firstOrNull() ?: BigInteger.ZERO
-        val ethBalance = BigDecimal(ethWei)
-            .divide(BigDecimal("1000000000000000000"), 4, java.math.RoundingMode.DOWN)
-            .toPlainString()
+        val ethBalance = com.data.wallet.util.WeiConverter.weiToEthString(ethWei)
         balanceMap["0x0000000000000000000000000000000000000000"] = ethBalance
 
         // ERC20 代币余额
@@ -263,8 +261,7 @@ internal class WalletRepository @Inject constructor(
     }
 
     private fun convertWeiToEth(wei: BigInteger?): BigDecimal {
-        val weiInEth = BigDecimal("1000000000000000000")
-        return BigDecimal(wei ?: BigInteger.ZERO).divide(weiInEth)
+        return com.data.wallet.util.WeiConverter.weiToEth(wei)
     }
 
     /** 热门币种符号，用于排序 */
@@ -291,4 +288,52 @@ internal class WalletRepository @Inject constructor(
         LogUtils.e("WalletRepository", "获取 Uniswap 代币列表失败: ${it.message}")
         emit(emptyList())
     }.flowOn(Dispatchers.IO)
+
+    /**
+     * 兑换页面聚合数据：代币列表 + 余额Map + ETH价格，一个出口
+     */
+    override fun getSwapTokenData(): Flow<com.data.wallet.repo.SwapTokenData> =
+        walletStore.getWalletList().flatMapLatest { walletList ->
+            flow {
+                val address = walletList.firstOrNull()
+                LogUtils.e("WalletRepository", "getSwapTokenData address=$address")
+
+                // 1. ETH 价格
+                val ethPrice = ethRepository.getEthPrice().firstOrNull() ?: 0.0
+                LogUtils.e("WalletRepository", "getSwapTokenData ethPrice=$ethPrice")
+
+                // 2. 余额 Map（合约地址 -> 余额）
+                val balanceMap = mutableMapOf<String, String>()
+                if (!address.isNullOrBlank()) {
+                    // ETH 余额
+                    val ethWei = ethRepository.getBalance(address).firstOrNull() ?: BigInteger.ZERO
+                    LogUtils.e("WalletRepository", "getSwapTokenData ethWei=$ethWei")
+                    val ethBalance = com.data.wallet.util.WeiConverter.weiToEthString(ethWei)
+                    balanceMap["0x0000000000000000000000000000000000000000"] = ethBalance
+
+                    // ERC20 代币余额
+                    val tokenBalances = alchemyRepository.getTokenBalances(address).firstOrNull() ?: emptyList()
+                    tokenBalances.forEach { token ->
+                        balanceMap[token.contractAddress.lowercase()] = token.balance
+                    }
+                }
+                LogUtils.e("WalletRepository", "getSwapTokenData balanceMap=$balanceMap")
+
+                // 3. Uniswap 代币列表
+                val jsonString = context.assets.open("uniswap_tokens.json").bufferedReader().use { it.readText() }
+                val response = Gson().fromJson(jsonString, UniswapTokenListResponse::class.java)
+                val mainnetTokens = response?.tokens
+                    ?.filter { it.chainId == 1 }
+                    ?.distinctBy { it.symbol }
+                val tokenList = mainnetTokens?.sortedBy { token ->
+                    val idx = popularSymbols.indexOf(token.symbol)
+                    if (idx >= 0) idx else Int.MAX_VALUE
+                }?.take(20) ?: emptyList()
+
+                emit(com.data.wallet.repo.SwapTokenData(ethPrice, balanceMap, tokenList))
+            }.catch {
+                LogUtils.e("WalletRepository", "获取兑换数据失败: ${it.message}")
+                emit(com.data.wallet.repo.SwapTokenData(0.0, emptyMap(), emptyList()))
+            }
+        }.flowOn(Dispatchers.IO)
 }

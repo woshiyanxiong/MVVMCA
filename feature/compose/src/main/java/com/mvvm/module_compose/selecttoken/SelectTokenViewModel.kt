@@ -53,9 +53,8 @@ class SelectTokenViewModel @Inject constructor(
 
             // ETH 原生代币
             val ethBalance = walletRepository.getBalance(currentAddress).firstOrNull() ?: BigInteger.ZERO
-            val ethBalanceDecimal = java.math.BigDecimal(ethBalance)
-                .divide(java.math.BigDecimal("1000000000000000000"))
-            val ethBalanceStr = String.format(java.util.Locale.US, "%.4f", ethBalanceDecimal)
+            val ethBalanceDecimal = com.data.wallet.util.WeiConverter.weiToEth(ethBalance)
+            val ethBalanceStr = ethBalanceDecimal.toPlainString()
             val ethUsdValue = ethBalanceDecimal.toDouble() * ethPrice
 
             tokens.add(
