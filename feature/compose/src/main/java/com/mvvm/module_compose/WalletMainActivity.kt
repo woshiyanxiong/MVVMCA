@@ -177,7 +177,7 @@ fun WalletMainScreen(
                     QuickActionButton(
                         icon = Icons.Default.Refresh,
                         text = "兑换",
-                        onClick = { }
+                        onClick = { WalletNavigator.navigateToSwap(context) }
                     )
                 }
             }

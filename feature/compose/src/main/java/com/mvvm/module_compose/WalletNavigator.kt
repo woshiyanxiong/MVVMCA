@@ -51,6 +51,15 @@ object WalletNavigator {
     }
 
     /**
+     * 跳转到兑换页面
+     */
+    fun navigateToSwap(context: Context) {
+        ARouter.getInstance()
+            .build("/wallet/swaptoken")
+            .navigation(context)
+    }
+
+    /**
      * 跳转到转账页面
      */
     fun navigateToTransfer(context: Context) {
