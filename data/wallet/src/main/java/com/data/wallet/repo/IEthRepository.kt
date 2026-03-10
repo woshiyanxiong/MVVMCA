@@ -55,4 +55,30 @@ interface IEthRepository {
      * 从钱包文件加载凭证
      */
     suspend fun loadCredentials(password: String, walletFilePath: String): Credentials
+
+    /**
+     * 通过 Uniswap V2 Router 查询兑换报价
+     * @param amountInWei 输入金额 (Wei)
+     * @param path 兑换路径 (代币地址列表)
+     * @return 输出金额 (Wei)，null 表示查询失败
+     */
+    fun getAmountsOut(amountInWei: java.math.BigInteger, path: List<String>): Flow<java.math.BigInteger?>
+
+    /**
+     * 获取当前 Gas 价格
+     * @return Gas 价格 (Wei)
+     */
+    fun getGasPrice(): Flow<java.math.BigInteger?>
+
+    /**
+     * 预估 Swap 交易的 Gas 用量
+     * @return Gas Limit
+     */
+    fun estimateSwapGas(
+        fromAddress: String,
+        fromToken: String,
+        toToken: String,
+        amountInWei: java.math.BigInteger,
+        amountOutMinWei: java.math.BigInteger
+    ): Flow<java.math.BigInteger?>
 }

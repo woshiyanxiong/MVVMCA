@@ -70,4 +70,34 @@ interface IWalletRepository {
 
     // 兑换页面聚合数据：代币列表 + 余额 + ETH价格，一个出口
     fun getSwapTokenData(): Flow<SwapTokenData>
+
+    /**
+     * 获取兑换报价信息（Uniswap V2 报价 + Gas 预估）
+     * @param fromToken 支付代币地址
+     * @param toToken 接收代币地址
+     * @param amountIn 输入金额字符串（人类可读，如 "0.1"）
+     * @param fromDecimals 支付代币精度
+     * @param toDecimals 接收代币精度
+     */
+    fun getSwapQuote(
+        fromToken: String,
+        toToken: String,
+        amountIn: String,
+        fromDecimals: Int,
+        toDecimals: Int
+    ): Flow<SwapQuoteResult>
 }
+
+/**
+ * 兑换报价结果
+ */
+data class SwapQuoteResult(
+    val amountOut: String = "0",
+    val exchangeRate: String = "0",
+    val gasFeeEth: String = "0",
+    val gasLimit: java.math.BigInteger = java.math.BigInteger.ZERO,
+    val gasPrice: java.math.BigInteger = java.math.BigInteger.ZERO,
+    val priceImpact: String = "< 0.01%",
+    val minimumReceived: String = "0",
+    val error: String? = null
+)

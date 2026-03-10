@@ -42,6 +42,10 @@ internal class EthRepository @Inject constructor(
     companion object {
         private const val NOTE_KEY = "54f700c58aeb4d2fb2620b817759894e"
         private const val CHAINLINK_ETH_USD_ADDRESS = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
+        /** Uniswap V2 Router 合约地址 */
+        private const val UNISWAP_V2_ROUTER = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
+        /** WETH 合约地址（主网） */
+        const val WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     }
 
     private val nodeUrl = "https://eth-mainnet.nodereal.io/v1/$NOTE_KEY"
@@ -205,4 +209,139 @@ internal class EthRepository @Inject constructor(
         withContext(Dispatchers.IO) {
             WalletUtils.loadCredentials(password, walletFilePath)
         }
+
+    /**
+     * 通过 Uniswap V2 Router 的 getAmountsOut 查询兑换报价
+     */
+    override fun getAmountsOut(amountInWei: BigInteger, path: List<String>): Flow<BigInteger?> = flow {
+        val pathAddresses = path.map { org.web3j.abi.datatypes.Address(it) }
+        val function = org.web3j.abi.FunctionEncoder.encode(
+            org.web3j.abi.datatypes.Function(
+                "getAmountsOut",
+                listOf(
+                    org.web3j.abi.datatypes.generated.Uint256(amountInWei),
+                    org.web3j.abi.DynamicArray(org.web3j.abi.datatypes.Address::class.java, pathAddresses)
+                ),
+                listOf(object : org.web3j.abi.TypeReference<org.web3j.abi.DynamicArray<org.web3j.abi.datatypes.generated.Uint256>>() {})
+            )
+        )
+
+        val response = web3.ethCall(
+            org.web3j.protocol.core.methods.request.Transaction.createEthCallTransaction(
+                null, UNISWAP_V2_ROUTER, function
+            ),
+            org.web3j.protocol.core.DefaultBlockParameterName.LATEST
+        ).send()
+
+        if (response.hasError()) {
+            LogUtils.e("EthRepository", "getAmountsOut 失败: ${response.error.message}")
+            emit(null)
+            return@flow
+        }
+
+        val decoded = org.web3j.abi.FunctionReturnDecoder.decode(
+            response.value,
+            org.web3j.abi.Utils.convert(
+                listOf(object : org.web3j.abi.TypeReference<org.web3j.abi.DynamicArray<org.web3j.abi.datatypes.generated.Uint256>>() {})
+            )
+        )
+
+        @Suppress("UNCHECKED_CAST")
+        val amounts = decoded[0] as org.web3j.abi.DynamicArray<org.web3j.abi.datatypes.generated.Uint256>
+        val amountOut = amounts.value.lastOrNull()?.value
+        LogUtils.e("EthRepository", "getAmountsOut: $amountInWei -> $amountOut")
+        emit(amountOut)
+    }.catch {
+        LogUtils.e("EthRepository", "getAmountsOut 异常: ${it.message}")
+        emit(null)
+    }.flowOn(Dispatchers.IO)
+
+    /**
+     * 获取当前 Gas 价格 (Wei)
+     */
+    override fun getGasPrice(): Flow<BigInteger?> = flow {
+        val gasPrice = web3.ethGasPrice().send().gasPrice
+        LogUtils.e("EthRepository", "当前 gasPrice: $gasPrice")
+        emit(gasPrice)
+    }.catch {
+        LogUtils.e("EthRepository", "获取 gasPrice 失败: ${it.message}")
+        emit(null)
+    }.flowOn(Dispatchers.IO)
+
+    /**
+     * 预估 Swap 交易的 Gas 用量
+     * 通过构造 Uniswap V2 Router 的 swapExactETHForTokens / swapExactTokensForTokens calldata 来预估
+     */
+    override fun estimateSwapGas(
+        fromAddress: String,
+        fromToken: String,
+        toToken: String,
+        amountInWei: BigInteger,
+        amountOutMinWei: BigInteger
+    ): Flow<BigInteger?> = flow {
+        val deadline = BigInteger.valueOf(System.currentTimeMillis() / 1000 + 1200) // 20分钟
+        val isFromETH = fromToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
+        val weth = WETH_ADDRESS
+
+        val callData: String
+        val value: BigInteger
+
+        if (isFromETH) {
+            // swapExactETHForTokens(uint256 amountOutMin, address[] path, address to, uint256 deadline)
+            val path = listOf(org.web3j.abi.datatypes.Address(weth), org.web3j.abi.datatypes.Address(toToken))
+            callData = org.web3j.abi.FunctionEncoder.encode(
+                org.web3j.abi.datatypes.Function(
+                    "swapExactETHForTokens",
+                    listOf(
+                        org.web3j.abi.datatypes.generated.Uint256(amountOutMinWei),
+                        org.web3j.abi.DynamicArray(org.web3j.abi.datatypes.Address::class.java, path),
+                        org.web3j.abi.datatypes.Address(fromAddress),
+                        org.web3j.abi.datatypes.generated.Uint256(deadline)
+                    ),
+                    emptyList()
+                )
+            )
+            value = amountInWei
+        } else {
+            // swapExactTokensForETH 或 swapExactTokensForTokens
+            val isToETH = toToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
+            val path = if (isToETH) {
+                listOf(org.web3j.abi.datatypes.Address(fromToken), org.web3j.abi.datatypes.Address(weth))
+            } else {
+                listOf(org.web3j.abi.datatypes.Address(fromToken), org.web3j.abi.datatypes.Address(weth), org.web3j.abi.datatypes.Address(toToken))
+            }
+            val funcName = if (isToETH) "swapExactTokensForETH" else "swapExactTokensForTokens"
+            callData = org.web3j.abi.FunctionEncoder.encode(
+                org.web3j.abi.datatypes.Function(
+                    funcName,
+                    listOf(
+                        org.web3j.abi.datatypes.generated.Uint256(amountInWei),
+                        org.web3j.abi.datatypes.generated.Uint256(amountOutMinWei),
+                        org.web3j.abi.DynamicArray(org.web3j.abi.datatypes.Address::class.java, path),
+                        org.web3j.abi.datatypes.Address(fromAddress),
+                        org.web3j.abi.datatypes.generated.Uint256(deadline)
+                    ),
+                    emptyList()
+                )
+            )
+            value = BigInteger.ZERO
+        }
+
+        val tx = org.web3j.protocol.core.methods.request.Transaction.createFunctionCallTransaction(
+            fromAddress, null, null, null, UNISWAP_V2_ROUTER, value, callData
+        )
+        val gasEstimate = web3.ethEstimateGas(tx).send()
+
+        if (gasEstimate.hasError()) {
+            LogUtils.e("EthRepository", "estimateGas 失败: ${gasEstimate.error.message}")
+            // Swap 交易 gas 预估失败时使用默认值 200000
+            emit(BigInteger.valueOf(200_000))
+        } else {
+            LogUtils.e("EthRepository", "estimateGas: ${gasEstimate.amountUsed}")
+            emit(gasEstimate.amountUsed)
+        }
+    }.catch {
+        LogUtils.e("EthRepository", "estimateGas 异常: ${it.message}")
+        emit(BigInteger.valueOf(200_000))
+    }.flowOn(Dispatchers.IO)
 }

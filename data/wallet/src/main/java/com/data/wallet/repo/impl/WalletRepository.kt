@@ -336,4 +336,96 @@ internal class WalletRepository @Inject constructor(
                 emit(com.data.wallet.repo.SwapTokenData(0.0, emptyMap(), emptyList()))
             }
         }.flowOn(Dispatchers.IO)
+
+    /**
+     * 获取兑换报价（Uniswap V2 getAmountsOut + Gas 预估）
+     */
+    override fun getSwapQuote(
+        fromToken: String,
+        toToken: String,
+        amountIn: String,
+        fromDecimals: Int,
+        toDecimals: Int
+    ): Flow<com.data.wallet.repo.SwapQuoteResult> = flow {
+        val address = walletStore.getWalletList().firstOrNull()?.firstOrNull()
+        if (address.isNullOrBlank()) {
+            emit(com.data.wallet.repo.SwapQuoteResult(error = "钱包地址为空"))
+            return@flow
+        }
+
+        val weth = EthRepository.WETH_ADDRESS
+
+        // 将人类可读金额转为 Wei
+        val amountInWei = BigDecimal(amountIn)
+            .multiply(BigDecimal.TEN.pow(fromDecimals))
+            .toBigInteger()
+
+        // 构造兑换路径：ETH 用 WETH 替代
+        val isFromETH = fromToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
+        val isToETH = toToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
+        val pathFrom = if (isFromETH) weth else fromToken
+        val pathTo = if (isToETH) weth else toToken
+        val path = if (pathFrom.equals(pathTo, ignoreCase = true)) {
+            emit(com.data.wallet.repo.SwapQuoteResult(error = "不能兑换相同代币"))
+            return@flow
+        } else {
+            listOf(pathFrom, pathTo)
+        }
+
+        // 1. 查询 Uniswap 报价
+        val amountOutWei = ethRepository.getAmountsOut(amountInWei, path).firstOrNull()
+        if (amountOutWei == null) {
+            emit(com.data.wallet.repo.SwapQuoteResult(error = "获取报价失败，该交易对可能不存在"))
+            return@flow
+        }
+
+        // 转为人类可读
+        val amountOut = BigDecimal(amountOutWei)
+            .divide(BigDecimal.TEN.pow(toDecimals), 18, java.math.RoundingMode.DOWN)
+            .stripTrailingZeros()
+            .toPlainString()
+
+        // 汇率
+        val rate = BigDecimal(amountOutWei)
+            .divide(BigDecimal(amountInWei), 18, java.math.RoundingMode.DOWN)
+            .multiply(BigDecimal.TEN.pow(fromDecimals))
+            .divide(BigDecimal.TEN.pow(toDecimals), 6, java.math.RoundingMode.DOWN)
+            .stripTrailingZeros()
+            .toPlainString()
+
+        // 最小接收（0.5% 滑点）
+        val minReceived = BigDecimal(amountOutWei)
+            .multiply(BigDecimal("0.995"))
+            .toBigInteger()
+        val minReceivedStr = BigDecimal(minReceived)
+            .divide(BigDecimal.TEN.pow(toDecimals), 18, java.math.RoundingMode.DOWN)
+            .stripTrailingZeros()
+            .toPlainString()
+
+        // 2. Gas 预估
+        val gasPrice = ethRepository.getGasPrice().firstOrNull() ?: BigInteger.valueOf(20_000_000_000L)
+        val gasLimit = ethRepository.estimateSwapGas(
+            fromAddress = address,
+            fromToken = fromToken,
+            toToken = toToken,
+            amountInWei = amountInWei,
+            amountOutMinWei = minReceived
+        ).firstOrNull() ?: BigInteger.valueOf(200_000)
+
+        // Gas 费 = gasPrice * gasLimit，转为 ETH
+        val gasFeeWei = gasPrice.multiply(gasLimit)
+        val gasFeeEth = com.data.wallet.util.WeiConverter.weiToEthString(gasFeeWei)
+
+        emit(com.data.wallet.repo.SwapQuoteResult(
+            amountOut = amountOut,
+            exchangeRate = rate,
+            gasFeeEth = gasFeeEth,
+            gasLimit = gasLimit,
+            gasPrice = gasPrice,
+            minimumReceived = minReceivedStr
+        ))
+    }.catch {
+        LogUtils.e("WalletRepository", "获取兑换报价失败: ${it.message}")
+        emit(com.data.wallet.repo.SwapQuoteResult(error = "获取报价异常: ${it.message}"))
+    }.flowOn(Dispatchers.IO)
 }

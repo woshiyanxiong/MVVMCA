@@ -180,7 +180,17 @@ fun SwapTokenScreen(
 
             // 兑换信息
             if (state.fromAmount.isNotEmpty() && state.fromAmount.toDoubleOrNull() != null && state.fromAmount.toDouble() > 0) {
-                SwapDetailCard(state)
+                if (state.isQuoting) {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("获取报价中...", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                } else {
+                    SwapDetailCard(state)
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -189,7 +199,7 @@ fun SwapTokenScreen(
             Button(
                 onClick = onSwap,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                enabled = state.isValid && !state.isLoading,
+                enabled = state.isValid && !state.isLoading && !state.isQuoting,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 if (state.isLoading) {

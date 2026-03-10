@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
-
 import com.data.wallet.util.WeiConverter
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 
 /**
  * 兑换代币信息
@@ -37,10 +37,11 @@ data class SwapTokenState(
     val exchangeRate: String = "0.0",
     val priceImpact: String = "< 0.01%",
     val minimumReceived: String = "0.0",
-    val networkFee: String = "0.002",
+    val networkFee: String = "--",
     val fromAmountError: String? = null,
     val error: String? = null,
     val isLoading: Boolean = false,
+    val isQuoting: Boolean = false,
     val isValid: Boolean = false,
     val tokenList: List<SwapTokenInfo> = emptyList(),
     val isLoadingTokens: Boolean = true,
@@ -58,8 +59,10 @@ class SwapTokenViewModel @Inject constructor(
 
     private var ethPrice: Double = 0.0
     private var ethBalance: String = "0.0"
-    /** 缓存代币余额 map: symbol -> balance */
+    /** 缓存代币余额 map: contract address -> balance */
     private var tokenBalanceMap: Map<String, String> = emptyMap()
+    /** 报价请求防抖 Job */
+    private var quoteJob: Job? = null
 
     init {
         loadSwapData()
@@ -100,14 +103,13 @@ class SwapTokenViewModel @Inject constructor(
                     isLoadingTokens = false,
                     toToken = tokenInfoList.find { it.symbol == _state.value.toToken.symbol } ?: _state.value.toToken
                 )
-                recalculate()
             }
         }
     }
 
     fun updateFromAmount(amount: String) {
         _state.value = _state.value.copy(fromAmount = amount)
-        recalculate()
+        requestQuote()
     }
 
     fun swapTokens() {
@@ -118,9 +120,12 @@ class SwapTokenViewModel @Inject constructor(
             fromAmount = "",
             toAmount = "",
             fromBalance = s.toToken.balance.ifEmpty { "0.0" },
-            fromAmountError = null
+            fromAmountError = null,
+            networkFee = "--",
+            exchangeRate = "0.0",
+            minimumReceived = "0.0",
+            isValid = false
         )
-        recalculate()
     }
 
     fun showFromTokenPicker() {
@@ -143,7 +148,6 @@ class SwapTokenViewModel @Inject constructor(
             toAmount = "",
             fromBalance = token.balance.ifEmpty { "0.0" }
         )
-        recalculate()
     }
 
     fun selectToToken(token: SwapTokenInfo) {
@@ -151,55 +155,71 @@ class SwapTokenViewModel @Inject constructor(
             toToken = token,
             showToTokenPicker = false
         )
-        recalculate()
+        requestQuote()
     }
 
-    private fun recalculate() {
+    /**
+     * 防抖请求链上报价（用户输入金额后 500ms 触发）
+     */
+    private fun requestQuote() {
+        quoteJob?.cancel()
         val s = _state.value
         val fromAmount = s.fromAmount.toDoubleOrNull()
 
-        if (fromAmount == null || fromAmount <= 0.0 || ethPrice <= 0.0) {
+        if (fromAmount == null || fromAmount <= 0.0) {
             _state.value = s.copy(
                 toAmount = "",
                 exchangeRate = "0.0",
                 minimumReceived = "0.0",
+                networkFee = "--",
                 isValid = false,
-                fromAmountError = null
+                isQuoting = false,
+                fromAmountError = null,
+                error = null
             )
             return
         }
 
-        val rate = getExchangeRate(s.fromToken.symbol, s.toToken.symbol)
-        val toAmount = BigDecimal(fromAmount).multiply(BigDecimal(rate)).setScale(6, RoundingMode.DOWN)
-        val minimumReceived = toAmount.multiply(BigDecimal("0.995")).setScale(6, RoundingMode.DOWN)
-
+        // 余额校验
         val balanceError = try {
             val bal = BigDecimal(s.fromBalance)
             if (BigDecimal(fromAmount) > bal) "余额不足" else null
         } catch (_: Exception) { null }
 
-        _state.value = s.copy(
-            toAmount = toAmount.stripTrailingZeros().toPlainString(),
-            exchangeRate = BigDecimal(rate).setScale(4, RoundingMode.DOWN).stripTrailingZeros().toPlainString(),
-            minimumReceived = minimumReceived.stripTrailingZeros().toPlainString(),
-            fromAmountError = balanceError,
-            isValid = balanceError == null && fromAmount > 0
-        )
-    }
+        _state.value = s.copy(isQuoting = true, fromAmountError = balanceError, error = null)
 
-    private fun getExchangeRate(fromSymbol: String, toSymbol: String): Double {
-        val stablecoins = setOf("USDT", "USDC", "DAI", "BUSD", "TUSD", "FRAX")
-        val fromUsd = when {
-            fromSymbol == "ETH" || fromSymbol == "WETH" -> ethPrice
-            stablecoins.contains(fromSymbol) -> 1.0
-            else -> 1.0
+        quoteJob = viewModelScope.launch {
+            delay(500) // 防抖
+            walletRepository.getSwapQuote(
+                fromToken = s.fromToken.address,
+                toToken = s.toToken.address,
+                amountIn = s.fromAmount,
+                fromDecimals = s.fromToken.decimals,
+                toDecimals = s.toToken.decimals
+            ).collect { quote ->
+                if (quote.error != null) {
+                    _state.value = _state.value.copy(
+                        toAmount = "",
+                        exchangeRate = "0.0",
+                        minimumReceived = "0.0",
+                        networkFee = "--",
+                        isQuoting = false,
+                        isValid = false,
+                        error = quote.error
+                    )
+                } else {
+                    _state.value = _state.value.copy(
+                        toAmount = quote.amountOut,
+                        exchangeRate = quote.exchangeRate,
+                        minimumReceived = quote.minimumReceived,
+                        networkFee = "${quote.gasFeeEth} ETH",
+                        isQuoting = false,
+                        isValid = balanceError == null && fromAmount > 0,
+                        error = null
+                    )
+                }
+            }
         }
-        val toUsd = when {
-            toSymbol == "ETH" || toSymbol == "WETH" -> ethPrice
-            stablecoins.contains(toSymbol) -> 1.0
-            else -> 1.0
-        }
-        return if (toUsd > 0) fromUsd / toUsd else 0.0
     }
 
     fun executeSwap() {
