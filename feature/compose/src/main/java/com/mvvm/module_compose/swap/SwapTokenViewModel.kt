@@ -208,14 +208,30 @@ class SwapTokenViewModel @Inject constructor(
                         error = quote.error
                     )
                 } else {
+                    // Gas 费用校验：ETH 余额是否足够支付 Gas
+                    val ethBal = BigDecimal(ethBalance)
+                    val gasFee = BigDecimal(quote.gasFeeEth)
+                    val isFromETH = _state.value.fromToken.address.equals(WeiConverter.ETH_ADDRESS, ignoreCase = true)
+
+                    val gasError = if (isFromETH) {
+                        // 支付 ETH 时：ETH余额 >= 输入金额 + Gas费
+                        val totalNeeded = BigDecimal(_state.value.fromAmount).add(gasFee)
+                        if (ethBal < totalNeeded) "ETH余额不足以支付金额+Gas费" else null
+                    } else {
+                        // 支付 ERC20 时：ETH余额 >= Gas费
+                        if (ethBal < gasFee) "ETH余额不足以支付Gas费" else null
+                    }
+
+                    val finalError = balanceError ?: gasError
                     _state.value = _state.value.copy(
                         toAmount = quote.amountOut,
                         exchangeRate = quote.exchangeRate,
                         minimumReceived = quote.minimumReceived,
                         networkFee = "${quote.gasFeeEth} ETH",
                         isQuoting = false,
-                        isValid = balanceError == null && fromAmount > 0,
-                        error = null
+                        isValid = finalError == null && fromAmount > 0,
+                        fromAmountError = balanceError,
+                        error = gasError
                     )
                 }
             }
