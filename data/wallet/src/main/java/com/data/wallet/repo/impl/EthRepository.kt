@@ -214,23 +214,26 @@ internal class EthRepository @Inject constructor(
      * 通过 Uniswap V2 Router 的 getAmountsOut 查询兑换报价
      */
     override fun getAmountsOut(amountInWei: BigInteger, path: List<String>): Flow<BigInteger?> = flow {
-        val pathAddresses = path.map { org.web3j.abi.datatypes.Address(it) }
-        val function = org.web3j.abi.FunctionEncoder.encode(
-            org.web3j.abi.datatypes.Function(
-                "getAmountsOut",
-                listOf(
-                    org.web3j.abi.datatypes.generated.Uint256(amountInWei),
-                    org.web3j.abi.DynamicArray(org.web3j.abi.datatypes.Address::class.java, pathAddresses)
-                ),
-                listOf(object : org.web3j.abi.TypeReference<org.web3j.abi.DynamicArray<org.web3j.abi.datatypes.generated.Uint256>>() {})
-            )
-        )
+        // 手动编码 getAmountsOut(uint256,address[]) 的 calldata
+        // function selector: getAmountsOut(uint256,address[])
+        val selector = "0xd06ca61f"
+        val amountHex = Numeric.toHexStringNoPrefixZeroPadded(amountInWei, 64)
+        // offset to address[] data (2 * 32 = 64 bytes = 0x40)
+        val offsetHex = "0000000000000000000000000000000000000000000000000000000000000040"
+        // array length
+        val lengthHex = Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(path.size.toLong()), 64)
+        // address elements (left-padded to 32 bytes)
+        val addressesHex = path.joinToString("") { addr ->
+            val clean = addr.removePrefix("0x").removePrefix("0X").lowercase()
+            clean.padStart(64, '0')
+        }
+        val callData = selector + amountHex + offsetHex + lengthHex + addressesHex
 
         val response = web3.ethCall(
             org.web3j.protocol.core.methods.request.Transaction.createEthCallTransaction(
-                null, UNISWAP_V2_ROUTER, function
+                null, UNISWAP_V2_ROUTER, callData
             ),
-            org.web3j.protocol.core.DefaultBlockParameterName.LATEST
+            DefaultBlockParameterName.LATEST
         ).send()
 
         if (response.hasError()) {
@@ -239,16 +242,22 @@ internal class EthRepository @Inject constructor(
             return@flow
         }
 
-        val decoded = org.web3j.abi.FunctionReturnDecoder.decode(
-            response.value,
-            org.web3j.abi.Utils.convert(
-                listOf(object : org.web3j.abi.TypeReference<org.web3j.abi.DynamicArray<org.web3j.abi.datatypes.generated.Uint256>>() {})
-            )
-        )
-
-        @Suppress("UNCHECKED_CAST")
-        val amounts = decoded[0] as org.web3j.abi.DynamicArray<org.web3j.abi.datatypes.generated.Uint256>
-        val amountOut = amounts.value.lastOrNull()?.value
+        // 解码返回值：uint256[] (dynamic array)
+        // 格式: offset(32) + length(32) + elements(32 each)
+        val hex = response.value.removePrefix("0x")
+        if (hex.length < 128) {
+            emit(null)
+            return@flow
+        }
+        // skip offset (first 32 bytes), read length
+        val arrayLength = BigInteger(hex.substring(64, 128), 16).toInt()
+        if (arrayLength < 1) {
+            emit(null)
+            return@flow
+        }
+        // 最后一个元素就是 amountOut
+        val lastElementStart = 128 + (arrayLength - 1) * 64
+        val amountOut = BigInteger(hex.substring(lastElementStart, lastElementStart + 64), 16)
         LogUtils.e("EthRepository", "getAmountsOut: $amountInWei -> $amountOut")
         emit(amountOut)
     }.catch {
@@ -279,51 +288,28 @@ internal class EthRepository @Inject constructor(
         amountInWei: BigInteger,
         amountOutMinWei: BigInteger
     ): Flow<BigInteger?> = flow {
-        val deadline = BigInteger.valueOf(System.currentTimeMillis() / 1000 + 1200) // 20分钟
+        val deadline = BigInteger.valueOf(System.currentTimeMillis() / 1000 + 1200)
         val isFromETH = fromToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
+        val isToETH = toToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
         val weth = WETH_ADDRESS
 
         val callData: String
         val value: BigInteger
 
         if (isFromETH) {
-            // swapExactETHForTokens(uint256 amountOutMin, address[] path, address to, uint256 deadline)
-            val path = listOf(org.web3j.abi.datatypes.Address(weth), org.web3j.abi.datatypes.Address(toToken))
-            callData = org.web3j.abi.FunctionEncoder.encode(
-                org.web3j.abi.datatypes.Function(
-                    "swapExactETHForTokens",
-                    listOf(
-                        org.web3j.abi.datatypes.generated.Uint256(amountOutMinWei),
-                        org.web3j.abi.DynamicArray(org.web3j.abi.datatypes.Address::class.java, path),
-                        org.web3j.abi.datatypes.Address(fromAddress),
-                        org.web3j.abi.datatypes.generated.Uint256(deadline)
-                    ),
-                    emptyList()
-                )
-            )
+            // swapExactETHForTokens(uint256,address[],address,uint256) selector: 0x7ff36ab5
+            val path = listOf(weth, toToken)
+            callData = encodeSwapCallData("7ff36ab5", amountOutMinWei, path, fromAddress, deadline)
             value = amountInWei
+        } else if (isToETH) {
+            // swapExactTokensForETH(uint256,uint256,address[],address,uint256) selector: 0x18cbafe5
+            val path = listOf(fromToken, weth)
+            callData = encodeSwapCallData("18cbafe5", amountInWei, amountOutMinWei, path, fromAddress, deadline)
+            value = BigInteger.ZERO
         } else {
-            // swapExactTokensForETH 或 swapExactTokensForTokens
-            val isToETH = toToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
-            val path = if (isToETH) {
-                listOf(org.web3j.abi.datatypes.Address(fromToken), org.web3j.abi.datatypes.Address(weth))
-            } else {
-                listOf(org.web3j.abi.datatypes.Address(fromToken), org.web3j.abi.datatypes.Address(weth), org.web3j.abi.datatypes.Address(toToken))
-            }
-            val funcName = if (isToETH) "swapExactTokensForETH" else "swapExactTokensForTokens"
-            callData = org.web3j.abi.FunctionEncoder.encode(
-                org.web3j.abi.datatypes.Function(
-                    funcName,
-                    listOf(
-                        org.web3j.abi.datatypes.generated.Uint256(amountInWei),
-                        org.web3j.abi.datatypes.generated.Uint256(amountOutMinWei),
-                        org.web3j.abi.DynamicArray(org.web3j.abi.datatypes.Address::class.java, path),
-                        org.web3j.abi.datatypes.Address(fromAddress),
-                        org.web3j.abi.datatypes.generated.Uint256(deadline)
-                    ),
-                    emptyList()
-                )
-            )
+            // swapExactTokensForTokens(uint256,uint256,address[],address,uint256) selector: 0x38ed1739
+            val path = listOf(fromToken, weth, toToken)
+            callData = encodeSwapCallData("38ed1739", amountInWei, amountOutMinWei, path, fromAddress, deadline)
             value = BigInteger.ZERO
         }
 
@@ -334,7 +320,6 @@ internal class EthRepository @Inject constructor(
 
         if (gasEstimate.hasError()) {
             LogUtils.e("EthRepository", "estimateGas 失败: ${gasEstimate.error.message}")
-            // Swap 交易 gas 预估失败时使用默认值 200000
             emit(BigInteger.valueOf(200_000))
         } else {
             LogUtils.e("EthRepository", "estimateGas: ${gasEstimate.amountUsed}")
@@ -344,4 +329,54 @@ internal class EthRepository @Inject constructor(
         LogUtils.e("EthRepository", "estimateGas 异常: ${it.message}")
         emit(BigInteger.valueOf(200_000))
     }.flowOn(Dispatchers.IO)
+
+    // ==================== ABI 手动编码辅助方法 ====================
+
+    /** 编码 swapExactETHForTokens: selector + amountOutMin + offset + to + deadline + path */
+    private fun encodeSwapCallData(
+        selector: String,
+        amountOutMin: BigInteger,
+        path: List<String>,
+        to: String,
+        deadline: BigInteger
+    ): String {
+        val sb = StringBuilder("0x$selector")
+        sb.append(padUint256(amountOutMin))
+        // offset to path array: 4 params * 32 = 128 = 0x80
+        sb.append(padUint256(BigInteger.valueOf(128)))
+        sb.append(padAddress(to))
+        sb.append(padUint256(deadline))
+        // path array
+        sb.append(padUint256(BigInteger.valueOf(path.size.toLong())))
+        path.forEach { sb.append(padAddress(it)) }
+        return sb.toString()
+    }
+
+    /** 编码 swapExactTokensForTokens / swapExactTokensForETH: selector + amountIn + amountOutMin + offset + to + deadline + path */
+    private fun encodeSwapCallData(
+        selector: String,
+        amountIn: BigInteger,
+        amountOutMin: BigInteger,
+        path: List<String>,
+        to: String,
+        deadline: BigInteger
+    ): String {
+        val sb = StringBuilder("0x$selector")
+        sb.append(padUint256(amountIn))
+        sb.append(padUint256(amountOutMin))
+        // offset to path array: 5 params * 32 = 160 = 0xa0
+        sb.append(padUint256(BigInteger.valueOf(160)))
+        sb.append(padAddress(to))
+        sb.append(padUint256(deadline))
+        // path array
+        sb.append(padUint256(BigInteger.valueOf(path.size.toLong())))
+        path.forEach { sb.append(padAddress(it)) }
+        return sb.toString()
+    }
+
+    private fun padUint256(value: BigInteger): String =
+        Numeric.toHexStringNoPrefixZeroPadded(value, 64)
+
+    private fun padAddress(address: String): String =
+        address.removePrefix("0x").removePrefix("0X").lowercase().padStart(64, '0')
 }
