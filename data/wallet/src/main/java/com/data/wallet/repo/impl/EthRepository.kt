@@ -379,4 +379,132 @@ internal class EthRepository @Inject constructor(
 
     private fun padAddress(address: String): String =
         address.removePrefix("0x").removePrefix("0X").lowercase().padStart(64, '0')
+
+    // ==================== ERC20 Approve ====================
+
+    /**
+     * 查询 ERC20 代币对 Uniswap Router 的授权额度
+     * allowance(address owner, address spender) selector: 0xdd62ed3e
+     */
+    override fun getAllowance(tokenAddress: String, ownerAddress: String): Flow<BigInteger?> = flow {
+        val callData = "0xdd62ed3e" + padAddress(ownerAddress) + padAddress(UNISWAP_V2_ROUTER)
+        val response = web3.ethCall(
+            org.web3j.protocol.core.methods.request.Transaction.createEthCallTransaction(
+                null, tokenAddress, callData
+            ),
+            DefaultBlockParameterName.LATEST
+        ).send()
+
+        if (response.hasError()) {
+            LogUtils.e("EthRepository", "getAllowance 失败: ${response.error.message}")
+            emit(BigInteger.ZERO)
+        } else {
+            val hex = response.value.removePrefix("0x")
+            emit(if (hex.isNotEmpty()) BigInteger(hex, 16) else BigInteger.ZERO)
+        }
+    }.catch {
+        LogUtils.e("EthRepository", "getAllowance 异常: ${it.message}")
+        emit(BigInteger.ZERO)
+    }.flowOn(Dispatchers.IO)
+
+    /**
+     * 执行 ERC20 approve 授权 Uniswap Router
+     * approve(address spender, uint256 amount) selector: 0x095ea7b3
+     */
+    override suspend fun approveToken(
+        credentials: Credentials,
+        tokenAddress: String,
+        amount: BigInteger
+    ): String? = withContext(Dispatchers.IO) {
+        try {
+            val callData = "0x095ea7b3" + padAddress(UNISWAP_V2_ROUTER) + padUint256(amount)
+
+            val nonce = web3.ethGetTransactionCount(
+                credentials.address, DefaultBlockParameterName.PENDING
+            ).send().transactionCount
+
+            val gasPrice = web3.ethGasPrice().send().gasPrice
+            val gasLimit = BigInteger.valueOf(60_000) // approve 通常 ~46000 gas
+
+            val rawTx = RawTransaction.createTransaction(
+                nonce, gasPrice, gasLimit, tokenAddress, BigInteger.ZERO, callData
+            )
+            val signedMessage = TransactionEncoder.signMessage(rawTx, 1L, credentials)
+            val hexValue = Numeric.toHexString(signedMessage)
+
+            val response = web3.ethSendRawTransaction(hexValue).send()
+            if (response.hasError()) {
+                LogUtils.e("EthRepository", "approve 失败: ${response.error.message}")
+                null
+            } else {
+                LogUtils.e("EthRepository", "approve 成功: ${response.transactionHash}")
+                response.transactionHash
+            }
+        } catch (e: Exception) {
+            LogUtils.e("EthRepository", "approve 异常: ${e.message}")
+            null
+        }
+    }
+
+    // ==================== Swap 执行 ====================
+
+    /**
+     * 执行 Uniswap V2 Swap 交易
+     */
+    override suspend fun executeSwap(
+        credentials: Credentials,
+        fromToken: String,
+        toToken: String,
+        amountInWei: BigInteger,
+        amountOutMinWei: BigInteger,
+        gasPrice: BigInteger,
+        gasLimit: BigInteger
+    ): String? = withContext(Dispatchers.IO) {
+        try {
+            val deadline = BigInteger.valueOf(System.currentTimeMillis() / 1000 + 1200)
+            val isFromETH = fromToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
+            val isToETH = toToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
+            val weth = WETH_ADDRESS
+            val to = credentials.address
+
+            val callData: String
+            val value: BigInteger
+
+            if (isFromETH) {
+                val path = listOf(weth, toToken)
+                callData = encodeSwapCallData("7ff36ab5", amountOutMinWei, path, to, deadline)
+                value = amountInWei
+            } else if (isToETH) {
+                val path = listOf(fromToken, weth)
+                callData = encodeSwapCallData("18cbafe5", amountInWei, amountOutMinWei, path, to, deadline)
+                value = BigInteger.ZERO
+            } else {
+                val path = listOf(fromToken, weth, toToken)
+                callData = encodeSwapCallData("38ed1739", amountInWei, amountOutMinWei, path, to, deadline)
+                value = BigInteger.ZERO
+            }
+
+            val nonce = web3.ethGetTransactionCount(
+                credentials.address, DefaultBlockParameterName.PENDING
+            ).send().transactionCount
+
+            val rawTx = RawTransaction.createTransaction(
+                nonce, gasPrice, gasLimit, UNISWAP_V2_ROUTER, value, callData
+            )
+            val signedMessage = TransactionEncoder.signMessage(rawTx, 1L, credentials)
+            val hexValue = Numeric.toHexString(signedMessage)
+
+            val response = web3.ethSendRawTransaction(hexValue).send()
+            if (response.hasError()) {
+                LogUtils.e("EthRepository", "swap 失败: ${response.error.message}")
+                null
+            } else {
+                LogUtils.e("EthRepository", "swap 成功: ${response.transactionHash}")
+                response.transactionHash
+            }
+        } catch (e: Exception) {
+            LogUtils.e("EthRepository", "swap 异常: ${e.message}")
+            null
+        }
+    }
 }

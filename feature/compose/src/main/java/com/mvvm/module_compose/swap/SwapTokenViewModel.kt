@@ -46,7 +46,11 @@ data class SwapTokenState(
     val tokenList: List<SwapTokenInfo> = emptyList(),
     val isLoadingTokens: Boolean = true,
     val showFromTokenPicker: Boolean = false,
-    val showToTokenPicker: Boolean = false
+    val showToTokenPicker: Boolean = false,
+    val showPasswordDialog: Boolean = false,
+    val passwordError: String? = null,
+    val swapTxHash: String? = null,
+    val swapSuccess: Boolean? = null
 )
 
 @HiltViewModel
@@ -63,6 +67,11 @@ class SwapTokenViewModel @Inject constructor(
     private var tokenBalanceMap: Map<String, String> = emptyMap()
     /** 报价请求防抖 Job */
     private var quoteJob: Job? = null
+    /** 缓存报价中的 gasPrice / gasLimit，执行 swap 时使用 */
+    private var cachedGasPrice: java.math.BigInteger = java.math.BigInteger.ZERO
+    private var cachedGasLimit: java.math.BigInteger = java.math.BigInteger.ZERO
+    /** 缓存最小接收金额 Wei（0.5% 滑点） */
+    private var cachedAmountOutMinWei: java.math.BigInteger = java.math.BigInteger.ZERO
 
     init {
         loadSwapData()
@@ -107,11 +116,13 @@ class SwapTokenViewModel @Inject constructor(
         }
     }
 
+    /** 更新支付金额并触发报价请求 */
     fun updateFromAmount(amount: String) {
         _state.value = _state.value.copy(fromAmount = amount)
         requestQuote()
     }
 
+    /** 交换支付/接收代币 */
     fun swapTokens() {
         val s = _state.value
         _state.value = s.copy(
@@ -208,6 +219,17 @@ class SwapTokenViewModel @Inject constructor(
                         error = quote.error
                     )
                 } else {
+                    // 缓存 gas 参数和最小接收金额
+                    cachedGasPrice = quote.gasPrice
+                    cachedGasLimit = quote.gasLimit
+                    // 计算 amountOutMinWei（0.5% 滑点）
+                    val amountOutWei = BigDecimal(quote.amountOut)
+                        .multiply(BigDecimal.TEN.pow(_state.value.toToken.decimals))
+                        .toBigInteger()
+                    cachedAmountOutMinWei = BigDecimal(amountOutWei)
+                        .multiply(BigDecimal("0.995"))
+                        .toBigInteger()
+
                     // Gas 费用校验：ETH 余额是否足够支付 Gas
                     val ethBal = BigDecimal(ethBalance)
                     val gasFee = BigDecimal(quote.gasFeeEth)
@@ -238,15 +260,55 @@ class SwapTokenViewModel @Inject constructor(
         }
     }
 
+    /** 点击兑换按钮，弹出密码确认框 */
     fun executeSwap() {
         if (!_state.value.isValid) return
-        _state.value = _state.value.copy(isLoading = true, error = null)
+        _state.value = _state.value.copy(showPasswordDialog = true, passwordError = null)
+    }
+
+    /** 关闭密码弹框 */
+    fun dismissPasswordDialog() {
+        _state.value = _state.value.copy(showPasswordDialog = false, passwordError = null)
+    }
+
+    /**
+     * 确认密码后执行兑换交易
+     * 调用 Repository 完成：加载凭证 → 检查授权 → approve → swap
+     */
+    fun confirmSwap(password: String) {
+        val s = _state.value
+        _state.value = s.copy(isLoading = true, passwordError = null)
         viewModelScope.launch {
-            kotlinx.coroutines.delay(2000)
-            _state.value = _state.value.copy(
-                isLoading = false,
-                error = "兑换功能开发中，敬请期待"
-            )
+            walletRepository.executeSwap(
+                password = password,
+                fromToken = s.fromToken.address,
+                toToken = s.toToken.address,
+                amountIn = s.fromAmount,
+                fromDecimals = s.fromToken.decimals,
+                amountOutMinWei = cachedAmountOutMinWei,
+                gasPrice = cachedGasPrice,
+                gasLimit = cachedGasLimit
+            ).collect { txHash ->
+                if (txHash != null) {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        showPasswordDialog = false,
+                        swapTxHash = txHash,
+                        swapSuccess = true,
+                        error = null
+                    )
+                } else {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        passwordError = "交易失败，请检查密码或网络"
+                    )
+                }
+            }
         }
+    }
+
+    /** 重置兑换结果状态 */
+    fun resetSwapResult() {
+        _state.value = _state.value.copy(swapTxHash = null, swapSuccess = null)
     }
 }

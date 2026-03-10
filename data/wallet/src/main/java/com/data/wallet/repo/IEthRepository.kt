@@ -81,4 +81,34 @@ interface IEthRepository {
         amountInWei: java.math.BigInteger,
         amountOutMinWei: java.math.BigInteger
     ): Flow<java.math.BigInteger?>
+
+    /**
+     * 检查 ERC20 代币对 Uniswap Router 的授权额度
+     * @return 已授权额度 (Wei)
+     */
+    fun getAllowance(tokenAddress: String, ownerAddress: String): Flow<java.math.BigInteger?>
+
+    /**
+     * 执行 ERC20 approve 授权
+     * @return 交易哈希，null 表示失败
+     */
+    suspend fun approveToken(
+        credentials: Credentials,
+        tokenAddress: String,
+        amount: java.math.BigInteger
+    ): String?
+
+    /**
+     * 执行 Uniswap V2 Swap 交易
+     * @return 交易哈希，null 表示失败
+     */
+    suspend fun executeSwap(
+        credentials: Credentials,
+        fromToken: String,
+        toToken: String,
+        amountInWei: java.math.BigInteger,
+        amountOutMinWei: java.math.BigInteger,
+        gasPrice: java.math.BigInteger,
+        gasLimit: java.math.BigInteger
+    ): String?
 }

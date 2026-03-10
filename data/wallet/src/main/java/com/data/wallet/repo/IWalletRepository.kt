@@ -86,6 +86,29 @@ interface IWalletRepository {
         fromDecimals: Int,
         toDecimals: Int
     ): Flow<SwapQuoteResult>
+
+    /**
+     * 执行兑换交易（加载凭证 → 检查/执行授权 → 执行 Swap）
+     * @param password 钱包密码
+     * @param fromToken 支付代币地址
+     * @param toToken 接收代币地址
+     * @param amountIn 输入金额字符串（人类可读）
+     * @param fromDecimals 支付代币精度
+     * @param amountOutMinWei 最小接收金额 (Wei)
+     * @param gasPrice Gas 价格 (Wei)
+     * @param gasLimit Gas 限制
+     * @return 交易哈希，null 表示失败
+     */
+    fun executeSwap(
+        password: String,
+        fromToken: String,
+        toToken: String,
+        amountIn: String,
+        fromDecimals: Int,
+        amountOutMinWei: BigInteger,
+        gasPrice: BigInteger,
+        gasLimit: BigInteger
+    ): Flow<String?>
 }
 
 /**

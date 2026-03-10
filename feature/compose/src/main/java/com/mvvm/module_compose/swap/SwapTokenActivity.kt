@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.alibaba.android.arouter.facade.annotation.Route
+import com.mvvm.module_compose.transfer.PasswordDialog
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -55,13 +56,20 @@ class SwapTokenActivity : ComponentActivity() {
                     onDismissTokenPicker = viewModel::dismissTokenPicker,
                     onSelectFromToken = viewModel::selectFromToken,
                     onSelectToToken = viewModel::selectToToken,
-                    onBack = { finish() }
+                    onBack = { finish() },
+                    onDismissPasswordDialog = viewModel::dismissPasswordDialog,
+                    onConfirmPassword = viewModel::confirmSwap,
+                    onDismissResult = viewModel::resetSwapResult
                 )
             }
         }
     }
 }
 
+/**
+ * 兑换页面主屏幕
+ * 包含：密码弹框、兑换结果弹框、币种选择弹框、支付/接收卡片、报价详情、兑换按钮
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwapTokenScreen(
@@ -74,8 +82,49 @@ fun SwapTokenScreen(
     onDismissTokenPicker: () -> Unit,
     onSelectFromToken: (SwapTokenInfo) -> Unit,
     onSelectToToken: (SwapTokenInfo) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onDismissPasswordDialog: () -> Unit,
+    onConfirmPassword: (String) -> Unit,
+    onDismissResult: () -> Unit
 ) {
+    // 密码弹框
+    if (state.showPasswordDialog) {
+        PasswordDialog(
+            onDismiss = onDismissPasswordDialog,
+            onConfirm = onConfirmPassword,
+            isLoading = state.isLoading,
+            error = state.passwordError
+        )
+    }
+
+    // 兑换结果弹框
+    if (state.swapSuccess != null) {
+        AlertDialog(
+            onDismissRequest = onDismissResult,
+            title = { Text(if (state.swapSuccess) "兑换成功" else "兑换失败") },
+            text = {
+                if (state.swapSuccess && state.swapTxHash != null) {
+                    Column {
+                        Text("交易已提交到链上")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "TxHash: ${state.swapTxHash.take(10)}...${state.swapTxHash.takeLast(8)}",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    Text("交易失败，请稍后重试")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onDismissResult) {
+                    Text("确定")
+                }
+            }
+        )
+    }
+
     // 币种选择弹框
     if (state.showFromTokenPicker) {
         TokenPickerDialog(
@@ -354,7 +403,7 @@ fun SwapDetailCard(state: SwapTokenState) {
             DetailRow("汇率", "1 ${state.fromToken.symbol} ≈ ${state.exchangeRate} ${state.toToken.symbol}")
             DetailRow("价格影响", state.priceImpact)
             DetailRow("最少接收", "${state.minimumReceived} ${state.toToken.symbol}")
-            DetailRow("网络费用", "${state.networkFee} ETH")
+            DetailRow("网络费用", state.networkFee)
         }
     }
 }

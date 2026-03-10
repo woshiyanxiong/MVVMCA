@@ -428,4 +428,75 @@ internal class WalletRepository @Inject constructor(
         LogUtils.e("WalletRepository", "获取兑换报价失败: ${it.message}")
         emit(com.data.wallet.repo.SwapQuoteResult(error = "获取报价异常: ${it.message}"))
     }.flowOn(Dispatchers.IO)
+
+    /**
+     * 执行兑换交易：加载凭证 → 检查授权 → approve(如需) → 执行 swap
+     */
+    override fun executeSwap(
+        password: String,
+        fromToken: String,
+        toToken: String,
+        amountIn: String,
+        fromDecimals: Int,
+        amountOutMinWei: BigInteger,
+        gasPrice: BigInteger,
+        gasLimit: BigInteger
+    ): Flow<String?> = flow {
+        // 1. 获取当前钱包地址
+        val currentAddress = walletStore.getWalletList().firstOrNull()?.firstOrNull()
+        if (currentAddress.isNullOrBlank()) {
+            LogUtils.e("WalletRepository", "executeSwap: 钱包地址为空")
+            emit(null)
+            return@flow
+        }
+
+        // 2. 加载钱包凭证
+        val walletFileName = walletStore.getWalletFileName(currentAddress).firstOrNull()
+        if (walletFileName.isNullOrBlank()) {
+            LogUtils.e("WalletRepository", "executeSwap: 钱包文件名为空")
+            emit(null)
+            return@flow
+        }
+        val walletFilePath = "${walletStore.getWalletDir()}/$walletFileName"
+        val credentials = ethRepository.loadCredentials(password, walletFilePath)
+
+        // 3. 计算输入金额 Wei
+        val amountInWei = BigDecimal(amountIn)
+            .multiply(BigDecimal.TEN.pow(fromDecimals))
+            .toBigInteger()
+
+        // 4. 非 ETH 代币需要检查/执行 approve
+        val isFromETH = fromToken.equals(com.data.wallet.util.WeiConverter.ETH_ADDRESS, ignoreCase = true)
+        if (!isFromETH) {
+            val allowance = ethRepository.getAllowance(fromToken, currentAddress).firstOrNull() ?: BigInteger.ZERO
+            if (allowance < amountInWei) {
+                LogUtils.e("WalletRepository", "executeSwap: 授权不足 allowance=$allowance, need=$amountInWei, 执行 approve")
+                val maxApproval = BigInteger("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 16)
+                val approveTx = ethRepository.approveToken(credentials, fromToken, maxApproval)
+                if (approveTx == null) {
+                    LogUtils.e("WalletRepository", "executeSwap: approve 失败")
+                    emit(null)
+                    return@flow
+                }
+                LogUtils.e("WalletRepository", "executeSwap: approve 成功 txHash=$approveTx, 等待确认...")
+                kotlinx.coroutines.delay(5000)
+            }
+        }
+
+        // 5. 执行 swap
+        val txHash = ethRepository.executeSwap(
+            credentials = credentials,
+            fromToken = fromToken,
+            toToken = toToken,
+            amountInWei = amountInWei,
+            amountOutMinWei = amountOutMinWei,
+            gasPrice = gasPrice,
+            gasLimit = gasLimit
+        )
+        LogUtils.e("WalletRepository", "executeSwap: 结果 txHash=$txHash")
+        emit(txHash)
+    }.catch {
+        LogUtils.e("WalletRepository", "executeSwap 失败: ${it.message}")
+        emit(null)
+    }.flowOn(Dispatchers.IO)
 }
