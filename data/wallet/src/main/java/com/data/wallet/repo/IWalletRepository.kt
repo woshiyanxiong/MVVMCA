@@ -53,6 +53,9 @@ interface IWalletRepository {
     // 获取地址下所有代币余额（通过 Alchemy）
     fun getTokenBalances(address: String): Flow<List<TokenBalanceEntity>>
 
+    // 获取当前钱包所有代币余额（ETH + ERC20），通过合约地址做 key
+    fun getAllTokenBalances(): Flow<Map<String, String>>
+
     // 获取 Uniswap 主网热门代币列表
     fun getUniswapTokenList(): Flow<List<com.data.wallet.entity.UniswapToken>>
 }

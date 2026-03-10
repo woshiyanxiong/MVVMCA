@@ -205,6 +205,38 @@ internal class WalletRepository @Inject constructor(
     override fun getTokenBalances(address: String): Flow<List<TokenBalanceEntity>> =
         alchemyRepository.getTokenBalances(address)
 
+    /**
+     * 获取当前钱包所有代币余额（ETH + ERC20）
+     * @return Map<合约地址(lowercase), 余额字符串>，ETH 的 key 为 0x0000...0000
+     */
+    override fun getAllTokenBalances(): Flow<Map<String, String>> = flow {
+        val address = walletStore.getWalletList().firstOrNull()?.firstOrNull()
+        if (address.isNullOrBlank()) {
+            emit(emptyMap())
+            return@flow
+        }
+
+        val balanceMap = mutableMapOf<String, String>()
+
+        // ETH 余额
+        val ethWei = ethRepository.getBalance(address).firstOrNull() ?: BigInteger.ZERO
+        val ethBalance = BigDecimal(ethWei)
+            .divide(BigDecimal("1000000000000000000"), 4, java.math.RoundingMode.DOWN)
+            .toPlainString()
+        balanceMap["0x0000000000000000000000000000000000000000"] = ethBalance
+
+        // ERC20 代币余额
+        val tokenBalances = alchemyRepository.getTokenBalances(address).firstOrNull() ?: emptyList()
+        tokenBalances.forEach { token ->
+            balanceMap[token.contractAddress.lowercase()] = token.balance
+        }
+
+        emit(balanceMap)
+    }.catch {
+        LogUtils.e("WalletRepository", "获取所有代币余额失败: ${it.message}")
+        emit(emptyMap())
+    }.flowOn(Dispatchers.IO)
+
     // ==================== 私有方法 ====================
 
     private fun createCredentialsFromMnemonic(mnemonic: List<String>): Credentials {

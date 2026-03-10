@@ -66,43 +66,31 @@ class SwapTokenViewModel @Inject constructor(
     }
 
     /**
-     * 通过 getBalance 获取 ETH 余额，通过 getTokenBalances 获取 ERC20 余额
-     * 用合约地址匹配币种列表
+     * 从 Repository 获取所有代币余额（ETH + ERC20），通过合约地址匹配
      */
     private fun loadBalances() {
         viewModelScope.launch {
-            val address = walletRepository.getWalletList().firstOrNull()?.firstOrNull() ?: return@launch
-
-            // 获取 ETH 余额
-            walletRepository.getBalance(address).firstOrNull()?.let { wei ->
-                ethBalance = java.math.BigDecimal(wei)
-                    .divide(java.math.BigDecimal("1000000000000000000"), 4, RoundingMode.DOWN)
-                    .toPlainString()
-                tokenBalanceMap = tokenBalanceMap + ("0x0000000000000000000000000000000000000000" to ethBalance)
-            }
-
             // 获取 ETH 价格
             walletRepository.getEthPrice().firstOrNull()?.let { price ->
                 ethPrice = price
             }
 
-            // 获取 ERC20 代币余额，用合约地址做 key
-            walletRepository.getTokenBalances(address).firstOrNull()?.let { balances ->
-                balances.forEach { token ->
-                    tokenBalanceMap = tokenBalanceMap + (token.contractAddress.lowercase() to token.balance)
-                }
-            }
+            // 获取所有代币余额 (合约地址 -> 余额)
+            walletRepository.getAllTokenBalances().collect { balances ->
+                tokenBalanceMap = balances
+                ethBalance = balances["0x0000000000000000000000000000000000000000"] ?: "0.0"
 
-            // 更新 tokenList 中的余额（通过合约地址匹配）
-            val updatedList = _state.value.tokenList.map { token ->
-                token.copy(balance = tokenBalanceMap[token.address.lowercase()] ?: "")
+                // 更新 tokenList 中的余额
+                val updatedList = _state.value.tokenList.map { token ->
+                    token.copy(balance = balances[token.address.lowercase()] ?: "")
+                }
+                val currentFromBalance = balances[_state.value.fromToken.address.lowercase()] ?: "0.0"
+                _state.value = _state.value.copy(
+                    fromBalance = currentFromBalance,
+                    tokenList = updatedList
+                )
+                recalculate()
             }
-            val currentFromBalance = tokenBalanceMap[_state.value.fromToken.address.lowercase()] ?: "0.0"
-            _state.value = _state.value.copy(
-                fromBalance = currentFromBalance,
-                tokenList = updatedList
-            )
-            recalculate()
         }
     }
 
