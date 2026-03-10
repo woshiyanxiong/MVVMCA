@@ -468,6 +468,17 @@ fun TokenPickerDialog(
                                 )
                             }
 
+                            // 余额
+                            if (token.balance.isNotEmpty()) {
+                                Text(
+                                    text = token.balance,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                            }
+
                             if (isSelected) {
                                 Icon(
                                     imageVector = Icons.Default.Check,

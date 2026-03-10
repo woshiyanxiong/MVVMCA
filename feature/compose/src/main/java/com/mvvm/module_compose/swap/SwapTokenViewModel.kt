@@ -20,7 +20,8 @@ data class SwapTokenInfo(
     val name: String,
     val address: String,
     val decimals: Int = 18,
-    val logoUrl: String? = null
+    val logoUrl: String? = null,
+    val balance: String = ""
 )
 
 /**
@@ -56,6 +57,8 @@ class SwapTokenViewModel @Inject constructor(
 
     private var ethPrice: Double = 0.0
     private var ethBalance: String = "0.0"
+    /** 缓存代币余额 map: symbol -> balance */
+    private var tokenBalanceMap: Map<String, String> = emptyMap()
 
     init {
         loadWalletInfo()
@@ -70,19 +73,26 @@ class SwapTokenViewModel @Inject constructor(
             walletRepository.getMainWalletInfo().collect { info ->
                 if (info != null) {
                     ethBalance = info.balance
-                    // 从 ethValue 解析价格: "$3000.00" -> 3000.00 / balance
                     val ethUsd = info.ethValue.removePrefix("$").toDoubleOrNull() ?: 0.0
                     val bal = info.balance.toDoubleOrNull() ?: 0.0
                     ethPrice = if (bal > 0) ethUsd / bal else 0.0
 
-                    // 更新当前支付币种余额
-                    val currentFromBalance = if (_state.value.fromToken.symbol == "ETH") {
-                        ethBalance
-                    } else {
-                        // 从代币列表中查找余额
-                        info.tokenBalances.find { it.symbol == _state.value.fromToken.symbol }?.balance ?: "0.0"
+                    // 缓存代币余额
+                    tokenBalanceMap = buildMap {
+                        put("ETH", ethBalance)
+                        info.tokenBalances.forEach { put(it.symbol, it.balance) }
                     }
-                    _state.value = _state.value.copy(fromBalance = currentFromBalance)
+
+                    // 更新 tokenList 中的余额
+                    val updatedList = _state.value.tokenList.map { token ->
+                        token.copy(balance = tokenBalanceMap[token.symbol] ?: "")
+                    }
+
+                    val currentFromBalance = tokenBalanceMap[_state.value.fromToken.symbol] ?: "0.0"
+                    _state.value = _state.value.copy(
+                        fromBalance = currentFromBalance,
+                        tokenList = updatedList
+                    )
                     recalculate()
                 }
             }
@@ -95,14 +105,15 @@ class SwapTokenViewModel @Inject constructor(
     private fun loadTokenList() {
         viewModelScope.launch {
             walletRepository.getUniswapTokenList().collect { tokens ->
-                val ethToken = SwapTokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000", 18, null)
+                val ethToken = SwapTokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000", 18, null, tokenBalanceMap["ETH"] ?: "")
                 val tokenInfoList = listOf(ethToken) + tokens.map { token ->
                     SwapTokenInfo(
                         symbol = token.symbol,
                         name = token.name,
                         address = token.address,
                         decimals = token.decimals,
-                        logoUrl = token.logoURI
+                        logoUrl = token.logoURI,
+                        balance = tokenBalanceMap[token.symbol] ?: ""
                     )
                 }
                 _state.value = _state.value.copy(
@@ -126,7 +137,7 @@ class SwapTokenViewModel @Inject constructor(
             toToken = s.fromToken,
             fromAmount = "",
             toAmount = "",
-            fromBalance = if (s.toToken.symbol == "ETH") ethBalance else "0.0",
+            fromBalance = s.toToken.balance.ifEmpty { "0.0" },
             fromAmountError = null
         )
         recalculate()
@@ -150,7 +161,7 @@ class SwapTokenViewModel @Inject constructor(
             showFromTokenPicker = false,
             fromAmount = "",
             toAmount = "",
-            fromBalance = if (token.symbol == "ETH") ethBalance else "0.0"
+            fromBalance = token.balance.ifEmpty { "0.0" }
         )
         recalculate()
     }
