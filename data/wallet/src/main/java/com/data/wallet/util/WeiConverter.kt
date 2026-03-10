@@ -10,6 +10,9 @@ import java.math.RoundingMode
 object WeiConverter {
     private val WEI_IN_ETH = BigDecimal("1000000000000000000")
 
+    /** ETH 原生代币占位合约地址 */
+    const val ETH_ADDRESS = "0x0000000000000000000000000000000000000000"
+
     /**
      * Wei 转 ETH（BigDecimal）
      */

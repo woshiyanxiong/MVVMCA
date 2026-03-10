@@ -11,6 +11,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 
+import com.data.wallet.util.WeiConverter
+
 /**
  * 兑换代币信息
  */
@@ -27,7 +29,7 @@ data class SwapTokenInfo(
  * 兑换页面状态
  */
 data class SwapTokenState(
-    val fromToken: SwapTokenInfo = SwapTokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000", 18, null),
+    val fromToken: SwapTokenInfo = SwapTokenInfo("ETH", "Ethereum", WeiConverter.ETH_ADDRESS, 18, null),
     val toToken: SwapTokenInfo = SwapTokenInfo("USDT", "Tether USD", "0xdAC17F958D2ee523a2206206994597C13D831ec7", 6, null),
     val fromAmount: String = "",
     val toAmount: String = "",
@@ -71,11 +73,11 @@ class SwapTokenViewModel @Inject constructor(
             walletRepository.getSwapTokenData().collect { data ->
                 ethPrice = data.ethPrice
                 tokenBalanceMap = data.balanceMap
-                ethBalance = data.balanceMap["0x0000000000000000000000000000000000000000"] ?: "0.0"
+                ethBalance = data.balanceMap[WeiConverter.ETH_ADDRESS] ?: "0.0"
 
                 // 构建代币列表（ETH + Uniswap 代币），附带余额
-                val ethToken = SwapTokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000", 18, null,
-                    data.balanceMap["0x0000000000000000000000000000000000000000"] ?: "")
+                val ethToken = SwapTokenInfo("ETH", "Ethereum", WeiConverter.ETH_ADDRESS, 18, null,
+                    data.balanceMap[WeiConverter.ETH_ADDRESS] ?: "")
                 val tokenInfoList = listOf(ethToken) + data.tokenList.map { token ->
                     SwapTokenInfo(
                         symbol = token.symbol,

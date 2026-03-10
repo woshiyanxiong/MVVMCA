@@ -261,7 +261,7 @@ internal class SwapRepository @Inject constructor(
             // 返回常用代币列表
             val tokens = listOf(
                 TokenInfo(
-                    address = "0x0000000000000000000000000000000000000000",
+                    address = com.data.wallet.util.WeiConverter.ETH_ADDRESS,
                     symbol = "ETH",
                     name = "Ethereum",
                     decimals = 18
@@ -333,7 +333,7 @@ internal class SwapRepository @Inject constructor(
      * 判断是否是 ETH
      */
     private fun isETH(address: String): Boolean {
-        return address == "0x0000000000000000000000000000000000000000" || 
+        return address == com.data.wallet.util.WeiConverter.ETH_ADDRESS || 
                address.equals("ETH", ignoreCase = true)
     }
 }

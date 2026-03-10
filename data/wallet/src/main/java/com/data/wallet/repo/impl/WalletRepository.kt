@@ -221,7 +221,7 @@ internal class WalletRepository @Inject constructor(
         // ETH 余额
         val ethWei = ethRepository.getBalance(address).firstOrNull() ?: BigInteger.ZERO
         val ethBalance = com.data.wallet.util.WeiConverter.weiToEthString(ethWei)
-        balanceMap["0x0000000000000000000000000000000000000000"] = ethBalance
+        balanceMap[com.data.wallet.util.WeiConverter.ETH_ADDRESS] = ethBalance
 
         // ERC20 代币余额
         val tokenBalances = alchemyRepository.getTokenBalances(address).firstOrNull() ?: emptyList()
@@ -309,7 +309,7 @@ internal class WalletRepository @Inject constructor(
                     val ethWei = ethRepository.getBalance(address).firstOrNull() ?: BigInteger.ZERO
                     LogUtils.e("WalletRepository", "getSwapTokenData ethWei=$ethWei")
                     val ethBalance = com.data.wallet.util.WeiConverter.weiToEthString(ethWei)
-                    balanceMap["0x0000000000000000000000000000000000000000"] = ethBalance
+                    balanceMap[com.data.wallet.util.WeiConverter.ETH_ADDRESS] = ethBalance
 
                     // ERC20 代币余额
                     val tokenBalances = alchemyRepository.getTokenBalances(address).firstOrNull() ?: emptyList()

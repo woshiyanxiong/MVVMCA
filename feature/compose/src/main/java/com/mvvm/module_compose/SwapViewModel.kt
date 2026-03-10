@@ -79,11 +79,11 @@ class SwapViewModel @Inject constructor(
         val tokenPair = if (isSwapped) {
             Pair(
                 TokenInfo("USDT", "Tether USD", "0xdac17f958d2ee523a2206206994597c13d831ec7"),
-                TokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000")
+                TokenInfo("ETH", "Ethereum", com.data.wallet.util.WeiConverter.ETH_ADDRESS)
             ) to Pair(balances.usdtBalance, balances.ethBalance)
         } else {
             Pair(
-                TokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000"),
+                TokenInfo("ETH", "Ethereum", com.data.wallet.util.WeiConverter.ETH_ADDRESS),
                 TokenInfo("USDT", "Tether USD", "0xdac17f958d2ee523a2206206994597c13d831ec7")
             ) to Pair(balances.ethBalance, balances.usdtBalance)
         }

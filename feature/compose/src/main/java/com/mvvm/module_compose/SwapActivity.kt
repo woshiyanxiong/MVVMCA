@@ -413,7 +413,7 @@ data class TokenInfo(
  * 兑换页面状态
  */
 data class SwapState(
-    val fromToken: TokenInfo = TokenInfo("ETH", "Ethereum", "0x0000000000000000000000000000000000000000"),
+    val fromToken: TokenInfo = TokenInfo("ETH", "Ethereum", com.data.wallet.util.WeiConverter.ETH_ADDRESS),
     val toToken: TokenInfo = TokenInfo("USDT", "Tether USD", "0xdac17f958d2ee523a2206206994597c13d831ec7"),
     val fromAmount: String = "",
     val toAmount: String = "",
