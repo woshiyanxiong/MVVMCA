@@ -9,8 +9,12 @@ plugins {
 val hiltVersion = "2.56.2"
 
 kapt {
+    correctErrorTypes = true
     arguments {
         arg("AROUTER_MODULE_NAME", project.name)
+    }
+    javacOptions {
+        option("-Adagger.hilt.android.internal.disableAndroidSuperclassValidation=true")
     }
 }
 
